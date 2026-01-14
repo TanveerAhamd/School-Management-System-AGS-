@@ -4,12 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-  <title>Student Registration Form</title>
+  <title>Student Detail Page</title>
 
   <link rel="stylesheet" href="assets/css/app.min.css">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/custom.css">
+  <link rel='shortcut icon' type='image/x-icon' href='assets/img/favicon.ico' />
+
 
   <style>
     /* Screen pe metadata chhupane ke liye */
@@ -24,10 +26,8 @@
       @page {
         size: A4;
         margin: 10mm;
-        /* Printer standard safety margin */
       }
 
-      /* 2. Remove all top spacing from dashboard containers */
       body,
       html {
         margin: 0 !important;
@@ -52,12 +52,22 @@
 
       #printableCard,
       #printableCard *,
+      #page2,
+      #page2 *,
+      #page3,
+      #page3 *,
       .print-metadata,
       .print-metadata * {
         visibility: visible !important;
       }
 
-      /* 4. Top Metadata (Name & Date) - Zero Spacing */
+      /* Page Break Logic */
+      #page2,
+      #page3 {
+        page-break-before: always;
+        display: block !important;
+      }
+
       .print-metadata {
         display: flex !important;
         justify-content: space-between;
@@ -68,11 +78,9 @@
         padding-bottom: 2px;
       }
 
-      /* 5. Card positioning fix */
       #printableCard {
         position: relative !important;
         top: 0 !important;
-        /* Forces card to top */
         width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
@@ -87,7 +95,6 @@
         display: none !important;
       }
 
-      /* 6. Grid Fix for Print */
       .row {
         display: flex !important;
         flex-direction: row !important;
@@ -119,6 +126,11 @@
         flex: 0 0 41.6% !important;
       }
 
+      .col-md-6 {
+        width: 50% !important;
+        flex: 0 0 50% !important;
+      }
+
       * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
@@ -128,39 +140,443 @@
         border: 4px solid #333 !important;
         padding: 20px !important;
         min-height: 275mm !important;
-        /* Stretches to A4 height */
       }
+    }
+
+    /* Style for image containers */
+    .img-box {
+      border: 2px dashed #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f9f9f9;
+      margin-top: 10px;
+    }
+
+    .img-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
     }
   </style>
 </head>
 
 <body>
+  <div class="loader"></div>
   <div id="app">
     <div class="main-wrapper main-wrapper-1">
+      <div class="navbar-bg"></div>
+
+      <nav class="navbar navbar-expand-lg main-navbar sticky">
+        <div class="form-inline mr-auto">
+          <ul class="navbar-nav mr-3">
+            <li><a href="#" data-toggle="sidebar" class="nav-link nav-link-lg
+									collapse-btn"> <i data-feather="align-justify"></i></a></li>
+            <li><a href="#" class="nav-link nav-link-lg fullscreen-btn">
+                <i data-feather="maximize"></i>
+              </a></li>
+            <li>
+              <form class="form-inline mr-auto">
+                <div class="search-element">
+                  <input class="form-control" type="search" placeholder="Search" aria-label="Search" data-width="200">
+                  <button class="btn" type="submit">
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+              </form>
+            </li>
+          </ul>
+        </div>
+        <ul class="navbar-nav navbar-right">
+          <li class="dropdown dropdown-list-toggle"><a href="#" data-toggle="dropdown"
+              class="nav-link nav-link-lg message-toggle"><i data-feather="mail"></i>
+              <span class="badge headerBadge1">
+                6 </span> </a>
+            <div class="dropdown-menu dropdown-list dropdown-menu-right pullDown">
+              <div class="dropdown-header">
+                Messages
+                <div class="float-right">
+                  <a href="#">Mark All As Read</a>
+                </div>
+              </div>
+              <div class="dropdown-list-content dropdown-list-message">
+                <a href="#" class="dropdown-item"> <span class="dropdown-item-avatar
+											text-white"> <img alt="image" src="assets/img/users/user-1.png" class="rounded-circle">
+                  </span> <span class="dropdown-item-desc"> <span class="message-user">John
+                      Deo</span>
+                    <span class="time messege-text">Please check your mail !!</span>
+                    <span class="time">2 Min Ago</span>
+                  </span>
+                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-avatar text-white">
+                    <img alt="image" src="assets/img/users/user-2.png" class="rounded-circle">
+                  </span> <span class="dropdown-item-desc"> <span class="message-user">Sarah
+                      Smith</span> <span class="time messege-text">Request for leave
+                      application</span>
+                    <span class="time">5 Min Ago</span>
+                  </span>
+                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-avatar text-white">
+                    <img alt="image" src="assets/img/users/user-5.png" class="rounded-circle">
+                  </span> <span class="dropdown-item-desc"> <span class="message-user">Jacob
+                      Ryan</span> <span class="time messege-text">Your payment invoice is
+                      generated.</span> <span class="time">12 Min Ago</span>
+                  </span>
+                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-avatar text-white">
+                    <img alt="image" src="assets/img/users/user-4.png" class="rounded-circle">
+                  </span> <span class="dropdown-item-desc"> <span class="message-user">Lina
+                      Smith</span> <span class="time messege-text">hii John, I have upload
+                      doc
+                      related to task.</span> <span class="time">30
+                      Min Ago</span>
+                  </span>
+                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-avatar text-white">
+                    <img alt="image" src="assets/img/users/user-3.png" class="rounded-circle">
+                  </span> <span class="dropdown-item-desc"> <span class="message-user">Jalpa
+                      Joshi</span> <span class="time messege-text">Please do as specify.
+                      Let me
+                      know if you have any query.</span> <span class="time">1
+                      Days Ago</span>
+                  </span>
+                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-avatar text-white">
+                    <img alt="image" src="assets/img/users/user-2.png" class="rounded-circle">
+                  </span> <span class="dropdown-item-desc"> <span class="message-user">Sarah
+                      Smith</span> <span class="time messege-text">Client Requirements</span>
+                    <span class="time">2 Days Ago</span>
+                  </span>
+                </a>
+              </div>
+              <div class="dropdown-footer text-center">
+                <a href="#">View All <i class="fas fa-chevron-right"></i></a>
+              </div>
+            </div>
+          </li>
+          <li class="dropdown dropdown-list-toggle"><a href="#" data-toggle="dropdown"
+              class="nav-link notification-toggle nav-link-lg"><i data-feather="bell" class="bell"></i>
+            </a>
+            <div class="dropdown-menu dropdown-list dropdown-menu-right pullDown">
+              <div class="dropdown-header">
+                Notifications
+                <div class="float-right">
+                  <a href="#">Mark All As Read</a>
+                </div>
+              </div>
+              <div class="dropdown-list-content dropdown-list-icons">
+                <a href="#" class="dropdown-item dropdown-item-unread"> <span
+                    class="dropdown-item-icon bg-primary text-white"> <i class="fas
+												fa-code"></i>
+                  </span> <span class="dropdown-item-desc"> Template update is
+                    available now! <span class="time">2 Min
+                      Ago</span>
+                  </span>
+                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-icon bg-info text-white"> <i class="far
+												fa-user"></i>
+                  </span> <span class="dropdown-item-desc"> <b>You</b> and <b>Dedik
+                      Sugiharto</b> are now friends <span class="time">10 Hours
+                      Ago</span>
+                  </span>
+                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-icon bg-success text-white"> <i
+                      class="fas
+												fa-check"></i>
+                  </span> <span class="dropdown-item-desc"> <b>Kusnaedi</b> has
+                    moved task <b>Fix bug header</b> to <b>Done</b> <span class="time">12
+                      Hours
+                      Ago</span>
+                  </span>
+                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-icon bg-danger text-white"> <i
+                      class="fas fa-exclamation-triangle"></i>
+                  </span> <span class="dropdown-item-desc"> Low disk space. Let's
+                    clean it! <span class="time">17 Hours Ago</span>
+                  </span>
+                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-icon bg-info text-white"> <i class="fas
+												fa-bell"></i>
+                  </span> <span class="dropdown-item-desc"> Welcome to Otika
+                    template! <span class="time">Yesterday</span>
+                  </span>
+                </a>
+              </div>
+              <div class="dropdown-footer text-center">
+                <a href="#">View All <i class="fas fa-chevron-right"></i></a>
+              </div>
+            </div>
+          </li>
+          <li class="dropdown"><a href="#" data-toggle="dropdown"
+              class="nav-link dropdown-toggle nav-link-lg nav-link-user"> <img alt="image" src="assets/img/user.png"
+                class="user-img-radious-style"> <span class="d-sm-none d-lg-inline-block"></span></a>
+            <div class="dropdown-menu dropdown-menu-right pullDown">
+              <div class="dropdown-title">Hello Sarah Smith</div>
+              <a href="profile.html" class="dropdown-item has-icon"> <i class="far
+										fa-user"></i> Profile
+              </a> <a href="timeline.html" class="dropdown-item has-icon"> <i class="fas fa-bolt"></i>
+                Activities
+              </a> <a href="#" class="dropdown-item has-icon"> <i class="fas fa-cog"></i>
+                Settings
+              </a>
+              <div class="dropdown-divider"></div>
+              <a href="auth-login.html" class="dropdown-item has-icon text-danger"> <i class="fas fa-sign-out-alt"></i>
+                Logout
+              </a>
+            </div>
+          </li>
+        </ul>
+      </nav>
+      <div class="main-sidebar sidebar-style-2">
+        <aside id="sidebar-wrapper">
+          <div class="sidebar-brand">
+            <a href="index.html"> <img alt="image" src="assets/img/logo.png" class="header-logo" /> <span
+                class="logo-name">Otika</span>
+            </a>
+          </div>
+          <ul class="sidebar-menu">
+            <li class="menu-header">Main</li>
+            <li class="dropdown">
+              <a href="index.html" class="nav-link"><i data-feather="monitor"></i><span>Home</span></a>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i
+                  data-feather="briefcase"></i><span>Widgets</span></a>
+              <ul class="dropdown-menu">
+                <li><a class="nav-link" href="widget-chart.html">Chart Widgets</a></li>
+                <li><a class="nav-link" href="widget-data.html">Data Widgets</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="command"></i><span>Apps</span></a>
+              <ul class="dropdown-menu">
+                <li><a class="nav-link" href="chat.html">Chat</a></li>
+                <li><a class="nav-link" href="portfolio.html">Portfolio</a></li>
+                <li><a class="nav-link" href="blog.html">Blog</a></li>
+                <li><a class="nav-link" href="calendar.html">Calendar</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="mail"></i><span>Email</span></a>
+              <ul class="dropdown-menu">
+                <li><a class="nav-link" href="email-inbox.html">Inbox</a></li>
+                <li><a class="nav-link" href="email-compose.html">Compose</a></li>
+                <li><a class="nav-link" href="email-read.html">read</a></li>
+              </ul>
+            </li>
+            <li class="menu-header">UI Elements</li>
+            <li class="dropdown">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="copy"></i><span>Basic
+                  Components</span></a>
+              <ul class="dropdown-menu">
+                <li><a class="nav-link" href="alert.html">Alert</a></li>
+                <li><a class="nav-link" href="badge.html">Badge</a></li>
+                <li><a class="nav-link" href="breadcrumb.html">Breadcrumb</a></li>
+                <li><a class="nav-link" href="buttons.html">Buttons</a></li>
+                <li><a class="nav-link" href="collapse.html">Collapse</a></li>
+                <li><a class="nav-link" href="dropdown.html">Dropdown</a></li>
+                <li><a class="nav-link" href="checkbox-and-radio.html">Checkbox &amp; Radios</a></li>
+                <li><a class="nav-link" href="list-group.html">List Group</a></li>
+                <li><a class="nav-link" href="media-object.html">Media Object</a></li>
+                <li><a class="nav-link" href="navbar.html">Navbar</a></li>
+                <li><a class="nav-link" href="pagination.html">Pagination</a></li>
+                <li><a class="nav-link" href="popover.html">Popover</a></li>
+                <li><a class="nav-link" href="progress.html">Progress</a></li>
+                <li><a class="nav-link" href="tooltip.html">Tooltip</a></li>
+                <li><a class="nav-link" href="flags.html">Flag</a></li>
+                <li><a class="nav-link" href="typography.html">Typography</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i
+                  data-feather="shopping-bag"></i><span>Advanced</span></a>
+              <ul class="dropdown-menu">
+                <li><a class="nav-link" href="avatar.html">Avatar</a></li>
+                <li><a class="nav-link" href="card.html">Card</a></li>
+                <li><a class="nav-link" href="modal.html">Modal</a></li>
+                <li><a class="nav-link" href="sweet-alert.html">Sweet Alert</a></li>
+                <li><a class="nav-link" href="toastr.html">Toastr</a></li>
+                <li><a class="nav-link" href="empty-state.html">Empty State</a></li>
+                <li><a class="nav-link" href="multiple-upload.html">Multiple Upload</a></li>
+                <li><a class="nav-link" href="pricing.html">Pricing</a></li>
+                <li><a class="nav-link" href="tabs.html">Tab</a></li>
+              </ul>
+            </li>
+            <li><a class="nav-link" href="blank.html"><i data-feather="file"></i><span>Blank Page</span></a></li>
+            <li class="menu-header">Otika</li>
+            <li class="dropdown active">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="layout"></i><span>Forms</span></a>
+              <ul class="dropdown-menu">
+                <li><a class="nav-link" href="basic-form.html">Basic Form</a></li>
+                <li><a class="nav-link" href="forms-advanced-form.html">Advanced Form</a></li>
+                <li><a class="nav-link" href="forms-editor.html">Editor</a></li>
+                <li class="active"><a class="nav-link" href="forms-validation.html">Validation</a></li>
+                <li><a class="nav-link" href="form-wizard.html">Form Wizard</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="grid"></i><span>Tables</span></a>
+              <ul class="dropdown-menu">
+                <li><a class="nav-link" href="basic-table.html">Basic Tables</a></li>
+                <li><a class="nav-link" href="advance-table.html">Advanced Table</a></li>
+                <li><a class="nav-link" href="datatables.html">Datatable</a></li>
+                <li><a class="nav-link" href="export-table.html">Export Table</a></li>
+                <li><a class="nav-link" href="editable-table.html">Editable Table</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i
+                  data-feather="pie-chart"></i><span>Charts</span></a>
+              <ul class="dropdown-menu">
+                <li><a class="nav-link" href="chart-amchart.html">amChart</a></li>
+                <li><a class="nav-link" href="chart-apexchart.html">apexchart</a></li>
+                <li><a class="nav-link" href="chart-echart.html">eChart</a></li>
+                <li><a class="nav-link" href="chart-chartjs.html">Chartjs</a></li>
+                <li><a class="nav-link" href="chart-sparkline.html">Sparkline</a></li>
+                <li><a class="nav-link" href="chart-morris.html">Morris</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="feather"></i><span>Icons</span></a>
+              <ul class="dropdown-menu">
+                <li><a class="nav-link" href="icon-font-awesome.html">Font Awesome</a></li>
+                <li><a class="nav-link" href="icon-material.html">Material Design</a></li>
+                <li><a class="nav-link" href="icon-ionicons.html">Ion Icons</a></li>
+                <li><a class="nav-link" href="icon-feather.html">Feather Icons</a></li>
+                <li><a class="nav-link" href="icon-weather-icon.html">Weather Icon</a></li>
+              </ul>
+            </li>
+            <li class="menu-header">Media</li>
+            <li class="dropdown">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="image"></i><span>Gallery</span></a>
+              <ul class="dropdown-menu">
+                <li><a class="nav-link" href="light-gallery.html">Light Gallery</a></li>
+                <li><a href="gallery1.html">Gallery 2</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="flag"></i><span>Sliders</span></a>
+              <ul class="dropdown-menu">
+                <li><a href="carousel.html">Bootstrap Carousel.html</a></li>
+                <li><a class="nav-link" href="owl-carousel.html">Owl Carousel</a></li>
+              </ul>
+            </li>
+            <li><a class="nav-link" href="timeline.html"><i data-feather="sliders"></i><span>Timeline</span></a></li>
+            <li class="menu-header">Maps</li>
+            <li class="dropdown">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="map"></i><span>Google
+                  Maps</span></a>
+              <ul class="dropdown-menu">
+                <li><a href="gmaps-advanced-route.html">Advanced Route</a></li>
+                <li><a href="gmaps-draggable-marker.html">Draggable Marker</a></li>
+                <li><a href="gmaps-geocoding.html">Geocoding</a></li>
+                <li><a href="gmaps-geolocation.html">Geolocation</a></li>
+                <li><a href="gmaps-marker.html">Marker</a></li>
+                <li><a href="gmaps-multiple-marker.html">Multiple Marker</a></li>
+                <li><a href="gmaps-route.html">Route</a></li>
+                <li><a href="gmaps-simple.html">Simple</a></li>
+              </ul>
+            </li>
+            <li><a class="nav-link" href="vector-map.html"><i data-feather="map-pin"></i><span>Vector
+                  Map</span></a></li>
+            <li class="menu-header">Pages</li>
+            <li class="dropdown">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i
+                  data-feather="user-check"></i><span>Auth</span></a>
+              <ul class="dropdown-menu">
+                <li><a href="auth-login.html">Login</a></li>
+                <li><a href="auth-register.html">Register</a></li>
+                <li><a href="auth-forgot-password.html">Forgot Password</a></li>
+                <li><a href="auth-reset-password.html">Reset Password</a></li>
+                <li><a href="subscribe.html">Subscribe</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i
+                  data-feather="alert-triangle"></i><span>Errors</span></a>
+              <ul class="dropdown-menu">
+                <li><a class="nav-link" href="errors-503.html">503</a></li>
+                <li><a class="nav-link" href="errors-403.html">403</a></li>
+                <li><a class="nav-link" href="errors-404.html">404</a></li>
+                <li><a class="nav-link" href="errors-500.html">500</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="anchor"></i><span>Other
+                  Pages</span></a>
+              <ul class="dropdown-menu">
+                <li><a class="nav-link" href="create-post.html">Create Post</a></li>
+                <li><a class="nav-link" href="posts.html">Posts</a></li>
+                <li><a class="nav-link" href="profile.html">Profile</a></li>
+                <li><a class="nav-link" href="contact.html">Contact</a></li>
+                <li><a class="nav-link" href="invoice.html">Invoice</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="menu-toggle nav-link has-dropdown"><i
+                  data-feather="chevrons-down"></i><span>Multilevel</span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Menu 1</a></li>
+                <li class="dropdown">
+                  <a href="#" class="has-dropdown">Menu 2</a>
+                  <ul class="dropdown-menu">
+                    <li><a href="#">Child Menu 1</a></li>
+                    <li class="dropdown">
+                      <a href="#" class="has-dropdown">Child Menu 2</a>
+                      <ul class="dropdown-menu">
+                        <li><a href="#">Child Menu 1</a></li>
+                        <li><a href="#">Child Menu 2</a></li>
+                      </ul>
+                    </li>
+                    <li><a href="#"> Child Menu 3</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </aside>
+      </div>
+      <!-- Main Content -->
+
       <div class="main-content">
         <section class="section">
-
-          <div class="row bg-title no-print">
-            <div class="col-12 p-3">
-              <h5 class="page-title">Manage Student (View)</h5>
+          <!-- breadcrumb -->
+          <div class="row bg-title">
+            <div class="col-12">
+              <div class="card mb-3">
+                <div class="card-body py-2 b-0">
+                  <div class="d-flex flex-wrap align-items-center justify-content-between">
+                    <!-- LEFT SIDE -->
+                    <div class="mb-2 mb-md-0">
+                      <h5 class="page-title mb-0">Student Detail view</h5>
+                    </div>
+                    <!-- RIGHT SIDE -->
+                    <div>
+                      <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 bg-transparent p-0">
+                          <li class="breadcrumb-item">
+                            <a href="#"><i class="fas fa-tachometer-alt"></i> Home</a>
+                          </li>
+                          <li class="breadcrumb-item">
+                            <a href="#"><i class="far fa-file"></i> Student Management</a>
+                          </li>
+                          <li class="breadcrumb-item active" aria-current="page">
+                            <i class="fas fa-list"></i> Student Detail
+                          </li>
+                        </ol>
+                      </nav>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-
           <div class="card p-2 p-md-4 border-0" id="printableCard">
-
             <div class="print-metadata">
-              <span>Student Name: Fatima Ahmad</span>
-              <span>Print Date: 14-Jan-2026</span>
+              <span style="color: #000; font-weight: bold;">Student Name: Fatima Ahmad</span>
+              <span style="color: #000; font-weight: bold;">Print Date: 14-Jan-2026</span>
             </div>
 
-            <div class="card-body rounded">
-
+            <div class="card-body rounded" style="border: 5px solid #0000004c !important ">
               <div class="row align-items-center mb-4">
                 <div class="col-md-2 text-center">
                   <img src="./assets/img/agslogo.png" alt="Logo" style="width: 80px;">
                   <div class="mt-2">
-                    <small class="fw-bold d-block">Reg #: <span class="text-primary">AGDC-1024</span></small>
-                    <small class="fw-bold">Date: <span>14-Jan-2026</span></small>
+                    <small class="fw-bold d-block">Reg #: <span class="text-primary"
+                        style="color: #000 !important; font-weight: 900 !important;">AGDC-1024</span></small>
+                    <small class="fw-bold">Date: <span
+                        style="color: #000 !important; font-weight: 900 !important;">14-Jan-2026</span></small>
                   </div>
                 </div>
 
@@ -171,10 +587,14 @@
                     STUDENT DETAIL RECORD
                   </h6>
                   <div class="d-flex justify-content-around mt-3 border-top border-bottom py-2">
-                    <span><strong>Class:</strong> 10th</span>
-                    <span><strong>Section:</strong> A</span>
-                    <span><strong>Session:</strong> 2024-26</span>
-                    <span><strong>Group:</strong> ICS</span>
+                    <span><strong>Class:</strong> <span
+                        style="color: #000 !important; font-weight: 900 !important;">10th</span></span>
+                    <span><strong>Section:</strong> <span
+                        style="color: #000 !important; font-weight: 900 !important;">A</span></span>
+                    <span><strong>Session:</strong> <span
+                        style="color: #000 !important; font-weight: 900 !important;">2024-26</span></span>
+                    <span><strong>Group:</strong> <span
+                        style="color: #000 !important; font-weight: 900 !important;">ICS</span></span>
                   </div>
                 </div>
 
@@ -186,7 +606,8 @@
 
               <div class="mt-3 mb-4 text-center">
                 <div class="badge bg-light text-dark p-2 border w-100">
-                  <strong>Subjects:</strong> Math, Physics, Chemistry, Computer Science
+                  <strong>Subjects:</strong> <span style="color: #000 !important; font-weight: 900 !important;">Math,
+                    Physics, Chemistry, Computer Science</span>
                 </div>
               </div>
 
@@ -196,21 +617,26 @@
                   <h6 dir="rtl">نام (اردو): ___________________</h6>
                 </div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Student Name</label><span
-                    class="fw-bold text-uppercase">Fatima Ahmad</span></div>
+                    class="fw-bold text-uppercase" style="color: #000 !important; font-weight: 900 !important;">Fatima
+                    Ahmad</span></div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">B-Form / CNIC</label><span
-                    class="fw-bold">31101-1234567-0</span></div>
+                    class="fw-bold" style="color: #000 !important; font-weight: 900 !important;">31101-1234567-0</span>
+                </div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Date of Birth</label><span
-                    class="fw-bold">12-Oct-2008</span></div>
-                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Gender</label><span
-                    class="fw-bold">Female</span></div>
+                    class="fw-bold" style="color: #000 !important; font-weight: 900 !important;">12-Oct-2008</span>
+                </div>
+                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Gender</label><span class="fw-bold"
+                    style="color: #000 !important; font-weight: 900 !important;">Female</span></div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Mother Language</label><span
-                    class="fw-bold">Urdu / Punjabi</span></div>
-                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Caste</label><span
-                    class="fw-bold">Rajput</span></div>
+                    class="fw-bold" style="color: #000 !important; font-weight: 900 !important;">Urdu / Punjabi</span>
+                </div>
+                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Caste</label><span class="fw-bold"
+                    style="color: #000 !important; font-weight: 900 !important;">Rajput</span></div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Contact #</label><span
-                    class="fw-bold">0300-1234567</span></div>
-                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Address</label><span
-                    class="fw-bold">Main City, Lodhran</span></div>
+                    class="fw-bold" style="color: #000 !important; font-weight: 900 !important;">0300-1234567</span>
+                </div>
+                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Address</label><span class="fw-bold"
+                    style="color: #000 !important; font-weight: 900 !important;">Main City, Lodhran</span></div>
               </div>
 
               <div class="row mt-5">
@@ -219,13 +645,15 @@
                   <h6 dir="rtl">والد کا نام (اردو): ___________________</h6>
                 </div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Guardian Name</label><span
-                    class="fw-bold">Ahmad Khan</span></div>
-                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Relation</label><span
-                    class="fw-bold">Father</span></div>
+                    class="fw-bold" style="color: #000 !important; font-weight: 900 !important;">Ahmad Khan</span></div>
+                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Relation</label><span class="fw-bold"
+                    style="color: #000 !important; font-weight: 900 !important;">Father</span></div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Occupation</label><span
-                    class="fw-bold">Government Employee</span></div>
+                    class="fw-bold" style="color: #000 !important; font-weight: 900 !important;">Government
+                    Employee</span></div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Contact #</label><span
-                    class="fw-bold">0301-7654321</span></div>
+                    class="fw-bold" style="color: #000 !important; font-weight: 900 !important;">0301-7654321</span>
+                </div>
               </div>
 
               <div class="row rounded mt-3" style="background-color: rgba(223, 223, 223, 0.758);">
@@ -236,32 +664,37 @@
                   <div class="row pb-3">
                     <div class="col-md-5 mt-2">
                       <label>School Name</label>
-                      <input type="text" class="form-control" value="Govt. High School Gailywal, Lodhran">
+                      <input type="text" class="form-control bg-white text-dark fw-bold"
+                        style="color: #000 !important; border-color: #000 !important;"
+                        value="Govt. High School Gailywal, Lodhran" readonly>
                     </div>
                     <div class="col-md-2 mt-2">
                       <label>Last Class</label>
-                      <input type="text" class="form-control" value="9th">
+                      <input type="text" class="form-control bg-white text-dark fw-bold"
+                        style="color: #000 !important; border-color: #000 !important;" value="9th" readonly>
                     </div>
                     <div class="col-md-2 mt-2">
                       <label>Passing Year</label>
-                      <input type="text" class="form-control" value="2024">
+                      <input type="text" class="form-control bg-white text-dark fw-bold"
+                        style="color: #000 !important; border-color: #000 !important;" value="2024" readonly>
                     </div>
                     <div class="col-md-3 mt-2">
                       <label>Board Name</label>
-                      <input type="text" class="form-control" value="BISE Multan">
+                      <input type="text" class="form-control bg-white text-dark fw-bold"
+                        style="color: #000 !important; border-color: #000 !important;" value="BISE Multan" readonly>
                     </div>
 
                     <div class="col-md-8 mt-3">
                       <div class="form-check d-flex align-items-center gap-2 mt-3">
                         <input class="form-check-input" type="checkbox" id="declareCheck"
-                          style="width: 20px; height: 20px; cursor:pointer;" checked>
-                        <label class="form-check-label fw-bold " for="declareCheck" style="cursor:pointer;">
+                          style="width: 20px; height: 20px; pointer-events: none;" checked>
+                        <label class="form-check-label fw-bold " for="declareCheck">
                           &nbsp; &nbsp; I declare that the information provided is correct.
                         </label>
                       </div>
                     </div>
                     <div class="col-md-4 text-end">
-                      <div style="border-top: 2px solid #000; width: 200px; display: inline-block;" class="mt-5">
+                      <div style="border-top: 1px solid #000; width: 200px; display: inline-block;" class="mt-5">
                         <p class="text-center fw-bold mb-0">Student Signature</p>
                       </div>
                     </div>
@@ -277,25 +710,28 @@
                   <div class="row pb-3">
                     <div class="col-md-3 mt-2">
                       <label>Registration Fee</label>
-                      <input type="text" class="form-control" value="1000">
+                      <input type="text" class="form-control bg-white text-dark fw-bold"
+                        style="color: #000 !important; border-color: #000 !important;" value="1000" readonly>
                     </div>
                     <div class="col-md-3 mt-2">
                       <label>Examination Fee</label>
-                      <input type="text" class="form-control" value="1800">
+                      <input type="text" class="form-control bg-white text-dark fw-bold"
+                        style="color: #000 !important; border-color: #000 !important;" value="1800" readonly>
                     </div>
                     <div class="col-md-3 mt-2">
                       <label>Stationary Fund</label>
-                      <input type="text" class="form-control" value="500">
+                      <input type="text" class="form-control bg-white text-dark fw-bold"
+                        style="color: #000 !important; border-color: #000 !important;" value="500" readonly>
                     </div>
                     <div class="col-md-3 mt-2">
                       <label>Board Name</label>
-                      <input type="text" class="form-control" value="Multan Board">
+                      <input type="text" class="form-control bg-white text-dark fw-bold"
+                        style="color: #000 !important; border-color: #000 !important;" value="Multan Board" readonly>
                     </div>
                   </div>
                 </div>
               </div>
 
-              
               <div class="row mt-5 pt-3 rounded"
                 style="background-color: #f8f9fa !important; border: 1px solid #ddd !important;">
                 <div class="col-md-4">
@@ -306,31 +742,111 @@
                 </div>
                 <div class="col-md-8">
                   <h6 class="fw-bold border-bottom pb-1">Remarks / Authority Note</h6>
-                  <div class="p-2 border bg-white rounded" style="min-height: 80px;">
+                  <div class="p-2 border bg-white rounded"
+                    style="min-height: 80px; color: #000 !important; font-weight: bold;">
                     Student is eligible for merit scholarship based on previous results.
                   </div>
-                  <div class="d-flex justify-content-between mt-5">
-                    <div class="text-center" style="width: 150px; border-top: 1px solid #000;"><small>Student
-                        Sign</small></div>
-                    <div class="text-center" style="width: 150px; border-top: 1px solid #000;"><small>Principal
+                  <div class="d-flex justify-content-end mt-5">
+
+                    <div class="text-center" style="width: 150px; border-top: 1px solid #000;"><small>Administrator
                         Sign</small></div>
                   </div>
                 </div>
               </div>
-
-              <div class="text-center mt-5 no-print">
-                <hr>
-                <button type="button" class="btn btn-success btn-lg px-5" onclick="window.print()">
-                  <i class="fas fa-print"></i> Print Student Record
-                </button>
-              </div>
-
             </div>
           </div>
+
+          <div class="card p-2 p-md-4 border-0" id="page2" style="page-break-before: always;">
+            <div class="card-body rounded" style="min-height: 290mm; border: 1px solid #ccc !important;">
+              <h5 class="text-center fw-bold border-bottom pb-2">PAGE 02: PARENT CNIC & RESULT CARD</h5>
+              <div class="row mt-4 text-center">
+                <div class="col-md-6">
+                  <h6 class="fw-bold small">GUARDIAN CNIC (FRONT)</h6>
+                  <div class="img-box" style="height: 220px; border: 1px solid #eee;">
+                    <img src="./assets/img/cnicf.jpg" class="img-fluid" style="max-height: 100%;" alt="Front CNIC">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <h6 class="fw-bold small">GUARDIAN CNIC (BACK)</h6>
+                  <div class="img-box" style="height: 220px; border: 1px solid #eee;">
+                    <img src="./assets/img/cnicback.jpg" class="img-fluid" style="max-height: 100%;" alt="Back CNIC">
+                  </div>
+                </div>
+              </div>
+              <div class="row mt-4">
+                <div class="col-12">
+                  <h6 class="fw-bold border-bottom pb-1">PREVIOUS RESULT CARD / DMC</h6>
+                  <div class="img-box"
+                    style="height: 700px; display: flex; align-items: start; justify-content: center;">
+                    <img src="./assets/img/ICS result card copy tanveer.jpg" class="img-fluid"
+                      style="max-height: 100%; width: auto;" alt="Result Card">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card p-2 p-md-4 border-0" id="page3" style="page-break-before: always;">
+            <div class="card-body rounded" style="min-height: 290mm; border: 1px solid #ccc !important;">
+              <h5 class="text-center fw-bold border-bottom pb-2">PAGE 03: STUDENT B-FORM</h5>
+              <div class="row mt-4">
+                <div class="col-12 text-center">
+                  <div class="img-box"
+                    style="height: 950px; display: flex; align-items: start; justify-content: center;">
+                    <img src="./assets/img/Matric sanad color tanveer.jpg" class="img-fluid"
+                      style="max-height: 100%; width: auto;" alt="B-Form">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center mt-5 no-print mb-5">
+            <button type="button" class="btn btn-success btn-lg px-5" onclick="window.print()">
+              <i class="fas fa-print"></i> Print
+            </button>
+          </div>
+
         </section>
       </div>
+
+      <footer class="main-footer bg-white border-top py-3 mt-2 no-print">
+        <div class="container-fluid">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <div class="footer-left text-muted ">
+              <span>&copy;
+                <?= date('Y') ?>
+              </span>
+              <a href="#" class="text-decoration-none fw-bold">AGDC 21-MPR, Lodhran</a>
+            </div>
+            <div class="footer-right ">
+              <span class="text-muted">Designed & Developed by</span>
+              <a href="#" class="text-danger text-decoration-none fw-bold">Tanveer_Ahmad</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+
     </div>
   </div>
+  <!-- General JS Scripts -->
+  <!-- General JS Scripts -->
+  <script src="assets/js/app.min.js"></script>
+  <!-- JS Libraies -->
+  <!-- Page Specific JS File -->
+  <script src="assets/bundles/datatables/datatables.min.js"></script>
+  <script src="assets/bundles/datatables/DataTables-1.10.16/js/dataTables.bootstrap4.min.js"></script>
+  <script src="assets/bundles/datatables/export-tables/dataTables.buttons.min.js"></script>
+  <script src="assets/bundles/datatables/export-tables/buttons.flash.min.js"></script>
+  <script src="assets/bundles/datatables/export-tables/jszip.min.js"></script>
+  <script src="assets/bundles/datatables/export-tables/pdfmake.min.js"></script>
+  <script src="assets/bundles/datatables/export-tables/vfs_fonts.js"></script>
+  <script src="assets/bundles/datatables/export-tables/buttons.print.min.js"></script>
+  <script src="assets/js/page/datatables.js"></script>
+  <!-- Template JS File -->
+  <script src="assets/js/scripts.js"></script>
+  <!-- Custom JS File -->
+  <script src="assets/js/custom.js"></script>
 </body>
 
 </html>
