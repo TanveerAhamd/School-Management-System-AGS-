@@ -399,36 +399,111 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                 <!-- STUDENT INFO -->
                 <h6 class="form-section-title mt-4"><i class='fas fa-user-graduate'></i> Basic Details</h6>
                 <div class="row">
-                  <div class="col-md-3 mt-2"><label class="small fw-bold">Student Name <span class="text-danger">*</span></label><input type="text" name="student_name" value="<?= htmlspecialchars($_POST['student_name'] ?? '') ?>" class="form-control" required></div>
-                  <div class="col-md-3 mt-2"><label class="small fw-bold">CNIC / B-Form <span class="text-danger">*</span></label><input type="text" id="mask_cnic" name="cnic_bform" value="<?= htmlspecialchars($_POST['cnic_bform'] ?? '') ?>" class="form-control" required></div>
-                  <div class="col-md-3 mt-2"><label class="small fw-bold">Date of Birth <span class="text-danger">*</span></label><input type="date" name="dob" value="<?= $_POST['dob'] ?? '' ?>" class="form-control" required></div>
-                  <div class="col-md-3 mt-2"><label class="small fw-bold">Gender <span class="text-danger">*</span></label><select name="gender" class="form-control">
-                      <option value="Female" <?= (($_POST['gender'] ?? '') == 'Female' ? 'selected' : '') ?>>Female</option>
-                      <option value="Male" <?= (($_POST['gender'] ?? '') == 'Male' ? 'selected' : '') ?>>Male</option>
-                    </select></div>
-                  <div class="col-md-2 mt-2"><label class="small fw-bold">Mother Language</label><input type="text" name="mother_language" value="<?= htmlspecialchars($_POST['mother_language'] ?? '') ?>" class="form-control"></div>
-                  <div class="col-md-2 mt-2"><label class="small fw-bold">Cast</label><input type="text" name="cast" value="<?= htmlspecialchars($_POST['cast'] ?? '') ?>" class="form-control"></div>
-                  <div class="col-md-3 mt-2"><label class="small fw-bold">Contact #</label><input type="text" id="mask_contact" name="contact_no" value="<?= htmlspecialchars($_POST['contact_no'] ?? '') ?>" class="form-control"></div>
-                  <div class="col-md-5 mt-2"><label class="small fw-bold">Address</label><input type="text" name="address" value="<?= htmlspecialchars($_POST['address'] ?? '') ?>" class="form-control"></div>
-                </div>
+                  <div class="col-md-3 mt-2">
+                    <label class="small fw-bold">Student Name <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      name="student_name"
+                      class="form-control upper-case"
+                      style="text-transform: uppercase;"
+                      value="<?= htmlspecialchars($_POST['student_name'] ?? '') ?>"
+                      required>
+                  </div>
 
-                <!-- GUARDIAN -->
+                  <div class="col-md-3 mt-2">
+                    <label class="small fw-bold">CNIC / B-Form <span class="text-danger">*</span></label>
+                    <input type="text" id="mask_cnic" name="cnic_bform" value="<?= htmlspecialchars($_POST['cnic_bform'] ?? '') ?>" class="form-control" required>
+                  </div>
+
+                  <div class="col-md-3 mt-2">
+                    <label class="small fw-bold">Date of Birth <span class="text-danger">*</span></label>
+                    <input type="date" name="dob" value="<?= $_POST['dob'] ?? '' ?>" class="form-control" required>
+                  </div>
+
+                  <div class="col-md-3 mt-2">
+                    <label class="small fw-bold">Gender <span class="text-danger">*</span></label>
+                    <select name="gender" class="form-control">
+                      <option value="FEMALE" <?= (($_POST['gender'] ?? '') == 'Female' ? 'selected' : '') ?>>Female</option>
+                      <option value="MALE" <?= (($_POST['gender'] ?? '') == 'Male' ? 'selected' : '') ?>>Male</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-2 mt-2">
+                    <label class="small fw-bold">Mother Language</label>
+                    <input
+                      type="text"
+                      name="mother_language"
+                      value="<?= htmlspecialchars($_POST['mother_language'] ?? '') ?>"
+                      class="form-control upper-case"
+                      style="text-transform: uppercase;">
+                  </div>
+
+                  <div class="col-md-2 mt-2">
+                    <label class="small fw-bold">Cast</label>
+                    <input
+                      type="text"
+                      name="cast"
+                      value="<?= htmlspecialchars($_POST['cast'] ?? '') ?>"
+                      class="form-control upper-case"
+                      style="text-transform: uppercase;">
+                  </div>
+
+                  <div class="col-md-3 mt-2">
+                    <label class="small fw-bold">Contact #</label>
+                    <input type="text" id="mask_contact" name="contact_no" value="<?= htmlspecialchars($_POST['contact_no'] ?? '') ?>" class="form-control">
+                  </div>
+
+                  <div class="col-md-5 mt-2">
+                    <label class="small fw-bold">Address</label>
+                    <input
+                      type="text"
+                      name="address"
+                      value="<?= htmlspecialchars($_POST['address'] ?? '') ?>"
+                      class="form-control upper-case"
+                      style="text-transform: uppercase;">
+                  </div>
+                </div>
                 <h6 class="form-section-title mt-4"><i class='fas fa-users'></i> Guardian Information</h6>
                 <div class="row">
-                  <div class="col-md-3 mt-2"><label class="small fw-bold">Guardian Name <span class="text-danger">*</span></label><input type="text" name="guardian_name" value="<?= htmlspecialchars($_POST['guardian_name'] ?? '') ?>" class="form-control" required></div>
-                  <div class="col-md-2 mt-2"><label class="small fw-bold">Relation <span class="text-danger">*</span></label><select name="relation" class="form-control"><?php $rels = ['Father', 'Mother', 'Uncle', 'Brother'];
-                                                                                                                                                                          foreach ($rels as $r) echo "<option value='$r' " . (($_POST['relation'] ?? '') == $r ? 'selected' : '') . ">$r</option>"; ?></select></div>
-                  <div class="col-md-3 mt-2"><label class="small fw-bold">Contact# <span class="text-danger">*</span></label><input type="text" id="mask_g_contact" name="guardian_contact" value="<?= htmlspecialchars($_POST['guardian_contact'] ?? '') ?>" class="form-control" required></div>
-                  <div class="col-md-4 mt-2"><label class="small fw-bold">Occupation</label><input type="text" name="occupation" value="<?= htmlspecialchars($_POST['occupation'] ?? '') ?>" class="form-control"></div>
+                  <div class="col-md-3 mt-2">
+                    <label class="small fw-bold">Guardian Name <span class="text-danger">*</span></label>
+                    <input type="text" name="guardian_name" value="<?= htmlspecialchars($_POST['guardian_name'] ?? '') ?>" class="form-control upper-case" style="text-transform: uppercase;" required>
+                  </div>
+                  <div class="col-md-2 mt-2">
+                    <label class="small fw-bold">Relation <span class="text-danger">*</span></label>
+                    <select name="relation" class="form-control">
+                      <?php $rels = ['Father', 'Mother', 'Uncle', 'Brother'];
+                      foreach ($rels as $r) echo "<option value='$r' " . (($_POST['relation'] ?? '') == $r ? 'selected' : '') . ">$r</option>"; ?>
+                    </select>
+                  </div>
+                  <div class="col-md-3 mt-2">
+                    <label class="small fw-bold">Contact# <span class="text-danger">*</span></label>
+                    <input type="text" id="mask_g_contact" name="guardian_contact" value="<?= htmlspecialchars($_POST['guardian_contact'] ?? '') ?>" class="form-control" required>
+                  </div>
+                  <div class="col-md-4 mt-2">
+                    <label class="small fw-bold">Occupation</label>
+                    <input type="text" name="occupation" value="<?= htmlspecialchars($_POST['occupation'] ?? '') ?>" class="form-control upper-case" style="text-transform: uppercase;">
+                  </div>
                 </div>
 
-                <!-- PREVIOUS SCHOOL RECORD -->
                 <h6 class="form-section-title mt-4"><i class='fas fa-university'></i> Previous School Record</h6>
                 <div class="row rounded p-2" style="background: #fdfdfd; border:1px solid #ebedf2;">
-                  <div class="col-md-5 mt-2"><label class="small fw-bold">Last School Attended</label><input type="text" name="prev_school_name" value="<?= htmlspecialchars($_POST['prev_school_name'] ?? '') ?>" class="form-control"></div>
-                  <div class="col-md-2 mt-2"><label class="small fw-bold">Last Class</label><input type="text" name="last_class" value="<?= htmlspecialchars($_POST['last_class'] ?? '') ?>" class="form-control"></div>
-                  <div class="col-md-2 mt-2"><label class="small fw-bold">Year of Passing</label><input type="text" name="passing_year" value="<?= htmlspecialchars($_POST['passing_year'] ?? '') ?>" class="form-control"></div>
-                  <div class="col-md-3 mt-2"><label class="small fw-bold">Board Name</label><input type="text" name="board_name" value="<?= htmlspecialchars($_POST['board_name'] ?? '') ?>" class="form-control"></div>
+                  <div class="col-md-5 mt-2">
+                    <label class="small fw-bold">Last School Attended</label>
+                    <input type="text" name="prev_school_name" value="<?= htmlspecialchars($_POST['prev_school_name'] ?? '') ?>" class="form-control upper-case" style="text-transform: uppercase;">
+                  </div>
+                  <div class="col-md-2 mt-2">
+                    <label class="small fw-bold">Last Class</label>
+                    <input type="text" name="last_class" value="<?= htmlspecialchars($_POST['last_class'] ?? '') ?>" class="form-control upper-case" style="text-transform: uppercase;">
+                  </div>
+                  <div class="col-md-2 mt-2">
+                    <label class="small fw-bold">Year of Passing</label>
+                    <input type="text" name="passing_year" value="<?= htmlspecialchars($_POST['passing_year'] ?? '') ?>" class="form-control">
+                  </div>
+                  <div class="col-md-3 mt-2">
+                    <label class="small fw-bold">Board Name</label>
+                    <input type="text" name="board_name" value="<?= htmlspecialchars($_POST['board_name'] ?? '') ?>" class="form-control upper-case" style="text-transform: uppercase;">
+                  </div>
                   <div class="col-md-12 mt-3">
                     <div class="form-check d-flex align-items-center">
                       <input class="form-check-input" type="checkbox" id="declareCheck" style="width: 18px; height: 18px;" required>
@@ -436,7 +511,6 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                     </div>
                   </div>
                 </div>
-
                 <!-- DOCUMENTS SECTION -->
                 <h6 class="form-section-title mt-4"><i class='fas fa-file-invoice'></i> Documents Upload (Portrait/Landscape)</h6>
                 <div class="row">
@@ -533,8 +607,8 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
   <canvas id="hidden_canvas" style="display:none;"></canvas>
 
   <script src="assets/js/app.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.8/jquery.inputmask.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="assets/js/jquery.inputmask.min.js"></script>
+  <script src="./assets/js/sweetalert2.js"></script>
 
   <script>
     $(window).on('load', function() {

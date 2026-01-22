@@ -7,3 +7,9 @@
 
 "use strict";
 
+$(document).ready(function () {
+    // Jis input field par 'upper-case' class hogi, ye usay auto-capitalize karega
+    $(document).on('keyup change', '.upper-case', function () {
+        this.value = this.value.toUpperCase();
+    });
+});

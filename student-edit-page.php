@@ -437,8 +437,8 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
 
   <!-- SCRIPTS -->
   <script src="assets/js/app.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.8/jquery.inputmask.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="assets/js/jquery.inputmask.min.js"></script>
+  <script src="assets/bundles/sweetalert/sweetalert.min.js"></script>
 
   <script>
     // FIX PRELOADER: Force fade out on window load

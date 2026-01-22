@@ -12,7 +12,10 @@ if (!isset($_GET['id'])) {
 
 $id = $_GET['id'];
 
-// Mukammal Join Query taake IDs ki jagah Names milain (including Group Name)
+/**
+ * GLOBAL QUERY: "is_deleted = 0" condition removed to allow viewing 
+ * Active, Passout, Dropout, and Archived students.
+ */
 $sql = "SELECT s.*, 
         c.class_name, 
         sec.section_name, 
@@ -25,14 +28,14 @@ $sql = "SELECT s.*,
         LEFT JOIN academic_sessions sess ON s.session = sess.id
         LEFT JOIN transport_routes tr ON s.route_id = tr.id
         LEFT JOIN subject_groups sg ON s.subject_group_id = sg.id
-        WHERE s.id = ? AND s.is_deleted = 0";
+        WHERE s.id = ?";
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$id]);
 $student = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$student) {
-  die("<div class='container mt-5'><div class='alert alert-danger'>Student record not found.</div></div>");
+  die("<div class='container mt-5'><div class='alert alert-danger'>Student record not found in the database.</div></div>");
 }
 
 /**
@@ -81,6 +84,51 @@ function formatMyDate($date)
       text-transform: uppercase;
       color: #000 !important;
       font-weight: 900 !important;
+    }
+
+    .val-text {
+      border-bottom: 1px solid #eee;
+      display: inline-block;
+      min-width: 50px;
+    }
+
+    /* Status Stamp for non-active students */
+    .status-stamp {
+      position: absolute;
+      top: 40px;
+      right: 180px;
+      border: 4px solid;
+      padding: 5px 20px;
+      border-radius: 12px;
+      font-weight: 900;
+      font-size: 22px;
+      transform: rotate(-15deg);
+      opacity: 0.4;
+      z-index: 100;
+      text-transform: uppercase;
+    }
+
+    /* Image Box Styling */
+    .img-box {
+      border: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      overflow: hidden;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .img-box:hover {
+      border-color: #6777ef;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .img-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
     }
 
     /* --- A4 PRINT OPTIMIZATION --- */
@@ -175,35 +223,6 @@ function formatMyDate($date)
         print-color-adjust: exact !important;
       }
     }
-
-    /* Image Box Styling */
-    .img-box {
-      border: 1px solid #ddd;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #fff;
-      overflow: hidden;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .img-box:hover {
-      border-color: #6777ef;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .img-box img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
-
-    .val-text {
-      border-bottom: 1px solid #eee;
-      display: inline-block;
-      min-width: 50px;
-    }
   </style>
 </head>
 
@@ -211,12 +230,13 @@ function formatMyDate($date)
   <div class="loader"></div>
   <div id="app">
     <div class="main-wrapper main-wrapper-1">
+      <div class="navbar-bg"></div>
       <?php include 'include/navbar.php'; ?>
       <div class="main-sidebar sidebar-style-2"><?php include 'include/asidebar.php'; ?></div>
 
       <div class="main-content">
         <section class="section">
-
+          <!-- breadcrumb -->
           <div class="row bg-title no-print">
             <div class="col-12">
               <div class="card mb-3">
@@ -229,6 +249,13 @@ function formatMyDate($date)
 
           <!-- PAGE 01: MAIN FORM -->
           <div class="card p-2 p-md-4 border-0" id="printableCard">
+            <!-- DYNAMIC STATUS STAMP -->
+            <?php
+            if ($student['is_passout'] == 1) echo '<div class="status-stamp text-success">PASSOUT</div>';
+            elseif ($student['is_dropout'] == 1) echo '<div class="status-stamp text-danger">DROPOUT</div>';
+            elseif ($student['is_deleted'] == 1) echo '<div class="status-stamp text-muted">ARCHIVED</div>';
+            ?>
+
             <div class="print-metadata">
               <span class="uppercase-data">Student: <?= htmlspecialchars($student['student_name']) ?></span>
               <span><strong>ID:</strong> <?= $student['reg_no'] ?> | <strong>Print Date:</strong> <?= date('d-M-Y') ?></span>
@@ -240,7 +267,7 @@ function formatMyDate($date)
                   <img src="./assets/img/agslogo.png" alt="Logo" style="width: 70px;">
                   <div class="mt-2">
                     <small class="fw-bold d-block text-nowrap">Reg #: <span class="val-text"><?= $student['reg_no'] ?></span></small>
-                    <small class="fw-bold d-block text-nowrap">Date: <span class="val-text"><?= date('d-M-Y') ?></span></small>
+                    <small class="fw-bold d-block text-nowrap">Date: <span class="val-text"><?= formatMyDate($student['created_at']) ?></span></small>
                   </div>
                 </div>
 
@@ -261,13 +288,13 @@ function formatMyDate($date)
                   <div class="img-box" style="height: 140px; width: 120px; background: #fff;" onclick="printSpecificImage(this.querySelector('img').src)">
                     <img src="<?= !empty($student['student_photo']) ? $student['student_photo'] : 'assets/img/userdummypic.png' ?>" title="Click to Print Photo">
                   </div>
-                  <small class="no-print text-muted">Click to print photo</small>
+                  <small class="no-print text-muted">Click to print</small>
                 </div>
               </div>
 
               <div class="mt-2 mb-4">
                 <div class="badge bg-light text-dark p-2 border w-100 text-center" style="white-space: normal; font-size: 13px;">
-                  <strong style="color: #6777ef; mx-4">Assigned Subjects:</strong> <span class="val-text mx-3"><?= $subjects_list ?></span>
+                  <strong style="color: #6777ef;">Assigned Subjects:</strong> <span class="val-text ml-2"><?= $subjects_list ?></span>
                 </div>
               </div>
 
@@ -332,10 +359,10 @@ function formatMyDate($date)
                 <div class="col-md-8">
                   <h6 class="fw-bold border-bottom pb-1">Remarks / Authority Note</h6>
                   <div class="p-2 border bg-white rounded uppercase-data" style="min-height: 70px; color: #000; font-size: 12px;">
-                    <?= !empty($student['remarks']) ? $student['remarks'] : "VERIFIED STUDENT RECORD FOR ENROLLMENT." ?>
+                    <?= !empty($student['remarks']) ? $student['remarks'] : "VERIFIED RECORD." ?>
                   </div>
                   <div class="d-flex justify-content-end mt-4">
-                    <div class="text-center" style="width: 180px; border-top: 1.5px solid #000;"><small class="fw-bold">Authority (Signature)</small></div>
+                    <div class="text-center" style="width: 180px; border-top: 1px solid #000;"><small class="fw-bold">Authority (Signature)</small></div>
                   </div>
                 </div>
               </div>
@@ -385,13 +412,12 @@ function formatMyDate($date)
             </div>
           </div>
 
-          <!-- Actions -->
           <div class="text-center mt-5 no-print mb-5">
             <button type="button" class="btn btn-success btn-lg px-5 shadow mr-2" onclick="window.print()">
-              <i class="fas fa-print"></i> Print Full A4 Profile
+              <i class="fas fa-print"></i> Print Full Profile
             </button>
             <a href="student-edit-page.php?id=<?= $student['id'] ?>" class="btn btn-info btn-lg px-5 shadow">
-              <i class="fas fa-pencil-alt"></i> Edit Record
+              <i class="fas fa-edit"></i> Edit Record
             </a>
           </div>
 
@@ -402,33 +428,22 @@ function formatMyDate($date)
     </div>
   </div>
 
-  <!-- JavaScript for Individual Image Printing -->
+  <script src="assets/js/app.min.js"></script>
+  <script src="assets/js/scripts.js"></script>
+  <script src="assets/js/custom.js"></script>
   <script>
     function printSpecificImage(imgSrc) {
       if (imgSrc.includes('elementor.png') || imgSrc.includes('userdummypic.png')) {
-        alert("No valid image available to print.");
         return;
       }
-
-      // Naya window open karein
       var win = window.open('', '_blank');
-      win.document.write('<html><head><title>Print Image</title></head><body style="margin:0; display:flex; align-items:center; justify-content:center;">');
-      win.document.write('<img src="' + imgSrc + '" style="max-width:100%; max-height:100vh; object-fit:contain;">');
-      win.document.write('</body></html>');
+      win.document.write('<html><body style="margin:0; display:flex; align-items:center; justify-content:center;"><img src="' + imgSrc + '" style="max-width:100%; max-height:100vh; object-fit:contain;"></body></html>');
       win.document.close();
-
-      // Wait for image to load before printing
       win.onload = function() {
         win.print();
         win.close();
       };
     }
-  </script>
-
-  <script src="assets/js/app.min.js"></script>
-  <script src="assets/js/scripts.js"></script>
-  <script src="assets/js/custom.js"></script>
-  <script>
     $(document).ready(function() {
       $('.loader').fadeOut('slow');
     });
