@@ -1,5 +1,4 @@
 <?php
-
 /**
  * 1. DATABASE CONNECTION & AJAX HANDLERS
  */
@@ -27,14 +26,12 @@ if (isset($_GET['delete_id'])) {
     if (!is_dir($trashFolder)) mkdir($trashFolder, 0777, true);
     foreach ($student as $key => $filePath) {
       if (!empty($filePath) && file_exists($filePath)) {
-        // Filename with ID prefix to avoid overwriting same names
         $newPath = $trashFolder . $id . "_" . basename($filePath);
         if (rename($filePath, $newPath)) {
           $pdo->prepare("UPDATE students SET $key = ? WHERE id = ?")->execute([$newPath, $id]);
         }
       }
     }
-    // Mark as is_deleted = 1 (Archived)
     $pdo->prepare("UPDATE students SET is_deleted = 1 WHERE id = ?")->execute([$id]);
   }
   header("Location: student-list.php?status=deleted");
@@ -42,7 +39,7 @@ if (isset($_GET['delete_id'])) {
 }
 
 /**
- * 3. GLOBAL FETCH LOGIC (FETCHING ALL STATUSES)
+ * 3. GLOBAL FETCH LOGIC
  */
 $classes = $pdo->query("SELECT * FROM classes")->fetchAll(PDO::FETCH_ASSOC);
 $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fetchAll();
@@ -52,23 +49,13 @@ $f_class = $_GET['class_id'] ?? '';
 $f_sec = $_GET['section_id'] ?? '';
 $f_stat = $_GET['student_status'] ?? 'All';
 
-$where_clauses = ["1=1"]; // Default: Fetch everything
+$where_clauses = ["1=1"];
 $params = [];
 
-if (!empty($f_sess)) {
-  $where_clauses[] = "s.session = ?";
-  $params[] = $f_sess;
-}
-if (!empty($f_class)) {
-  $where_clauses[] = "s.class_id = ?";
-  $params[] = $f_class;
-}
-if (!empty($f_sec)) {
-  $where_clauses[] = "s.section_id = ?";
-  $params[] = $f_sec;
-}
+if (!empty($f_sess)) { $where_clauses[] = "s.session = ?"; $params[] = $f_sess; }
+if (!empty($f_class)) { $where_clauses[] = "s.class_id = ?"; $params[] = $f_class; }
+if (!empty($f_sec)) { $where_clauses[] = "s.section_id = ?"; $params[] = $f_sec; }
 
-// Status Filtering Logic
 if ($f_stat == 'Active') {
   $where_clauses[] = "s.is_deleted = 0 AND s.is_passout = 0 AND s.is_dropout = 0";
 } elseif ($f_stat == 'Passout') {
@@ -93,11 +80,10 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-  <title>Student List | AGS 21/MPR Lodhran</title>
+  <title>Global Registry | AGS Lodhran</title>
   <link rel="stylesheet" href="assets/css/app.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/datatables.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css">
@@ -106,31 +92,9 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <link rel="stylesheet" href="assets/css/custom.css">
   <link rel='shortcut icon' type='image/x-icon' href='assets/img/favicon.ico' />
   <style>
-    #student_list_card .st-img-circle {
-      width: 35px;
-      height: 35px;
-      object-fit: cover;
-      border-radius: 50%;
-      border: 1px solid #ddd;
-    }
-
-    .badge-status {
-      font-size: 9px;
-      text-transform: uppercase;
-      font-weight: 700;
-      padding: 4px 8px;
-    }
-
-    .interest-badge {
-      font-size: 8px;
-      font-weight: 600;
-      text-transform: capitalize;
-      padding: 2px 6px;
-      margin-right: 2px;
-      margin-bottom: 2px;
-      display: inline-block;
-      border: 1px solid #eee;
-    }
+    #student_list_card .st-img-circle { width: 35px; height: 35px; object-fit: cover; border-radius: 50%; border: 1px solid #ddd; }
+    .badge-status { font-size: 9px; text-transform: uppercase; font-weight: 700; padding: 4px 8px; }
+    .interest-badge { font-size: 8px; font-weight: 600; text-transform: capitalize; padding: 2px 6px; margin-right: 2px; margin-bottom: 2px; display: inline-block; border: 1px solid #eee; }
   </style>
 </head>
 
@@ -144,18 +108,12 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
       <div class="main-content">
         <section class="section">
           <div class="section-body">
-
+            
             <div class="row bg-title no-print">
               <div class="col-12">
                 <div class="card mb-3">
                   <div class="card-body py-2 b-0 d-flex justify-content-between align-items-center">
-                    <h5 class="page-title mb-0">Global Student Registry (All Statuses)</h5>
-                    <nav aria-label="breadcrumb">
-                      <ol class="breadcrumb mb-0 bg-transparent p-0">
-                        <li class="breadcrumb-item"><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Home</a></li>
-                        <li class="breadcrumb-item active">Registry</li>
-                      </ol>
-                    </nav>
+                    <h5 class="page-title mb-0">Global Student Registry</h5>
                   </div>
                 </div>
               </div>
@@ -172,14 +130,14 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <form method="GET">
                       <div class="row">
                         <div class="col-md-2">
-                          <label class="small font-weight-bold">Academic Session</label>
+                          <label class="small font-weight-bold">Session</label>
                           <select name="session_id" class="form-control select2">
                             <option value="">All Sessions</option>
                             <?php foreach ($sessions as $s) echo "<option value='{$s['id']}' " . ($f_sess == $s['id'] ? 'selected' : '') . ">{$s['session_name']}</option>"; ?>
                           </select>
                         </div>
                         <div class="col-md-2">
-                          <label class="small font-weight-bold">Target Class</label>
+                          <label class="small font-weight-bold">Class</label>
                           <select name="class_id" id="filter_class" class="form-control select2">
                             <option value="">All Classes</option>
                             <?php foreach ($classes as $c) echo "<option value='{$c['id']}' " . ($f_class == $c['id'] ? 'selected' : '') . ">{$c['class_name']}</option>"; ?>
@@ -198,12 +156,12 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <option value="Active" <?= ($f_stat == 'Active' ? 'selected' : '') ?>>Active Only</option>
                             <option value="Passout" <?= ($f_stat == 'Passout' ? 'selected' : '') ?>>Passout Only</option>
                             <option value="Dropout" <?= ($f_stat == 'Dropout' ? 'selected' : '') ?>>Dropout Only</option>
-                            <option value="Archived" <?= ($f_stat == 'Archived' ? 'selected' : '') ?>>Deleted/Archived Only</option>
+                            <option value="Archived" <?= ($f_stat == 'Archived' ? 'selected' : '') ?>>Archived Only</option>
                           </select>
                         </div>
                         <div class="col-md-3">
                           <label class="d-block">&nbsp;</label>
-                          <button type="submit" class="btn btn-primary btn-block shadow-sm"><i class="fa fa-search"></i> Fetch Global List</button>
+                          <button type="submit" class="btn btn-primary btn-block shadow-sm"><i class="fa fa-search"></i> Fetch List</button>
                         </div>
                       </div>
                     </form>
@@ -230,18 +188,11 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
                           foreach ($students as $row):
                             $photo = (!empty($row['student_photo']) && file_exists($row['student_photo'])) ? $row['student_photo'] : 'assets/img/userdummypic.png';
 
-                            // PRIORITY STATUS LOGIC
-                            if ($row['is_passout'] == 1) {
-                              $status = '<span class="badge badge-success badge-status">Passout</span>';
-                            } elseif ($row['is_dropout'] == 1) {
-                              $status = '<span class="badge badge-danger badge-status">Dropout</span>';
-                            } elseif ($row['is_deleted'] == 1) {
-                              $status = '<span class="badge badge-secondary badge-status">Archived</span>';
-                            } else {
-                              $status = '<span class="badge badge-primary badge-status">Active</span>';
-                            }
+                            if ($row['is_passout'] == 1) { $status = '<span class="badge badge-success badge-status">Passout</span>'; }
+                            elseif ($row['is_dropout'] == 1) { $status = '<span class="badge badge-danger badge-status">Dropout</span>'; }
+                            elseif ($row['is_deleted'] == 1) { $status = '<span class="badge badge-secondary badge-status">Archived</span>'; }
+                            else { $status = '<span class="badge badge-primary badge-status">Active</span>'; }
 
-                            // Editable check: Only if Active (not deleted, not passout, not dropout)
                             $is_active = ($row['is_deleted'] == 0 && $row['is_passout'] == 0 && $row['is_dropout'] == 0);
                           ?>
                             <tr>
@@ -250,32 +201,17 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
                               <td><img src="<?= $photo ?>" class="st-img-circle"></td>
                               <td class="text-uppercase small font-weight-bold"><?= $row['student_name'] ?></td>
                               <td><?= $row['class_name'] ?> (<?= $row['section_name'] ?>)</td>
-
-                              <td>
-                                <?php
-                                if (!empty($row['interests'])) {
-                                  $interests = explode(',', $row['interests']);
-                                  foreach ($interests as $i) echo '<span class="badge badge-light interest-badge">' . trim($i) . '</span>';
-                                } else {
-                                  echo '<small class="text-muted">-</small>';
-                                }
-                                ?>
-                              </td>
-
+                              <td><?php if(!empty($row['interests'])){ $interests = explode(',', $row['interests']); foreach($interests as $i) echo '<span class="badge badge-light interest-badge">' . trim($i) . '</span>'; } else { echo '-'; } ?></td>
                               <td><?= $status ?></td>
                               <td>
                                 <div class="d-flex align-items-center gap-1">
-                                  <!-- View Detail: Always enabled -->
-                                  <a href="student-detail-page.php?id=<?= $row['id'] ?>" class="btn btn-success btn-circle btn-xs" title="View Detail"><i class="fa fa-eye"></i></a>
-
+                                  <a href="student-detail-page.php?id=<?= $row['id'] ?>" class="btn btn-success btn-circle btn-xs" title="View"><i class="fa fa-eye"></i></a>
                                   <?php if ($is_active): ?>
-                                    <!-- Edit & Archive enabled only for ACTIVE students -->
-                                    <a href="student-edit-page.php?id=<?= $row['id'] ?>" class="btn btn-info btn-circle btn-xs" title="Edit Record"><i class="fas fa-pencil-alt"></i></a>
+                                    <a href="student-edit-page.php?id=<?= $row['id'] ?>" class="btn btn-info btn-circle btn-xs" title="Edit"><i class="fas fa-pencil-alt"></i></a>
                                     <a href="javascript:void(0)" onclick="confirmDelete(<?= $row['id'] ?>)" class="btn btn-danger btn-circle btn-xs" title="Archive"><i class="fa fa-times"></i></a>
                                   <?php else: ?>
-                                    <!-- LOCK icons for Edit & Archive if status is not Active -->
-                                    <button class="btn btn-light btn-circle btn-xs" disabled title="Edit Locked"><i class="fa fa-lock"></i></button>
-                                    <button class="btn btn-light btn-circle btn-xs" disabled title="Status Locked"><i class="fa fa-lock"></i></button>
+                                    <button class="btn btn-light btn-circle btn-xs" disabled title="Locked"><i class="fa fa-lock"></i></button>
+                                    <button class="btn btn-light btn-circle btn-xs" disabled title="Locked"><i class="fa fa-lock"></i></button>
                                   <?php endif; ?>
                                 </div>
                               </td>
@@ -299,20 +235,54 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <script src="assets/bundles/datatables/datatables.min.js"></script>
   <script src="assets/bundles/datatables/DataTables-1.10.16/js/dataTables.bootstrap4.min.js"></script>
   <script src="assets/bundles/datatables/export-tables/dataTables.buttons.min.js"></script>
+  <script src="assets/bundles/datatables/export-tables/buttons.flash.min.js"></script>
+  <script src="assets/bundles/datatables/export-tables/jszip.min.js"></script>
+  <script src="assets/bundles/datatables/export-tables/pdfmake.min.js"></script>
+  <script src="assets/bundles/datatables/export-tables/vfs_fonts.js"></script>
   <script src="./assets/js/sweetalert2.js"></script>
   <script src="assets/js/scripts.js"></script>
-  <script src="assets/js/custom.js"></script>
 
   <script>
     $(document).ready(function() {
       $('.loader').fadeOut('slow');
 
+      // --- DATATABLE WITH PDF THUMBNAILS ---
       $('#tableExportImages').DataTable({
         dom: 'Bfrtip',
-        buttons: ['copy', 'csv', 'excel', 'print', 'pdf']
+        buttons: [
+          'copy', 'csv', 'excel', 'print',
+          {
+            extend: 'pdfHtml5',
+            orientation: 'landscape',
+            pageSize: 'A4',
+            exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6] },
+            customize: function (doc) {
+              // Iterate through the PDF table body
+              for (var i = 1; i < doc.content[1].table.body.length; i++) {
+                // Get the image element from the actual HTML table row
+                // index 2 is the Image column
+                var img = $('#tableExportImages').DataTable().row(i - 1).node().querySelectorAll('img')[0];
+                
+                if (img) {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    var dataURL = canvas.toDataURL('image/png');
+                    
+                    // Replace the text in the PDF cell with the image
+                    doc.content[1].table.body[i][2] = {
+                      image: dataURL,
+                      width: 25
+                    };
+                }
+              }
+            }
+          }
+        ]
       });
 
-      // Dynamic Section Loader
       $('#filter_class').on('change', function() {
         var cid = $(this).val();
         if (cid) {
@@ -330,18 +300,10 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
     });
 
     function confirmDelete(id) {
-      Swal.fire({
-        title: 'Archive Student?',
-        text: "This student will be moved to archived records and media will be shifted.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Yes, Archive!'
-      }).then((result) => {
+      Swal.fire({ title: 'Archive Student?', text: "Media will be shifted.", icon: 'warning', showCancelButton: true, confirmButtonText: 'Yes, Archive!' }).then((result) => {
         if (result.isConfirmed) window.location.href = 'student-list.php?delete_id=' + id;
       });
     }
   </script>
 </body>
-
 </html>

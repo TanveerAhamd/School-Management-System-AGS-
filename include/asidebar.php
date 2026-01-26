@@ -6,8 +6,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <style>
   /* Dropdown ke andar jo active link hai uska style */
   .sidebar-menu .dropdown-menu li.active a {
-    color: #6777ef !important; /* Light Blue Text */
-    background-color: #f0f3ff !important; /* Halki transparency wala background */
+    color: #6777ef !important;
+    /* Light Blue Text */
+    background-color: #f0f3ff !important;
+    /* Halki transparency wala background */
     font-weight: 600 !important;
   }
 
@@ -17,36 +19,36 @@ $current_page = basename($_SERVER['PHP_SELF']);
   }
 
   /* Main dropdown jab active ho to sidebar ki left line ka color */
-  .sidebar-menu li.active > a {
+  .sidebar-menu li.active>a {
     border-left: 3px solid #6777ef !important;
     color: #6777ef !important;
   }
-  
+
   /* Feather icons ka color jab wo section active ho */
-  .sidebar-menu li.active > a i {
+  .sidebar-menu li.active>a i {
     color: #6777ef !important;
   }
 </style>
 
 <aside id="sidebar-wrapper">
   <div class="sidebar-brand">
-    <a href="dashboard.php"> 
-      <img alt="image" src="assets/img/logo.png" class="header-logo" /> 
-      <span class="logo-name">AGS-SMS</span>
+    <a href="dashboard.php">
+      <img alt="image" src="assets/img/AGHS Logo.png" class="header-logo" />
+      <span class="logo-name">AGHS</span>
     </a>
   </div>
   <ul class="sidebar-menu">
     <li class="menu-header">Main</li>
-    
+
     <li class="<?= ($current_page == 'dashboard.php') ? 'active' : '' ?>">
       <a href="dashboard.php" class="nav-link"><i data-feather="monitor"></i><span>Dashboard</span></a>
     </li>
 
     <li class="menu-header">Management</li>
 
-    <?php 
-      $student_pages = ['student-registration-form.php', 'student-list.php', 'promotion_detain.php', 'passout_drop.php', 'print_certificate.php', 'add-bulk-student.php'];
-      $is_student_active = in_array($current_page, $student_pages);
+    <?php
+    $student_pages = ['student-registration-form.php', 'student-list.php', 'promotion_detain.php', 'passout_drop.php', 'print_certificate.php', 'add-bulk-student.php'];
+    $is_student_active = in_array($current_page, $student_pages);
     ?>
     <li class="dropdown <?= $is_student_active ? 'active' : '' ?>">
       <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="users"></i><span>Students</span></a>
@@ -60,9 +62,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
       </ul>
     </li>
 
-    <?php 
-      $class_pages = ['manage-class.php', 'manage-section.php', 'manage-session.php'];
-      $is_class_active = in_array($current_page, $class_pages);
+    <?php
+    $class_pages = ['manage-class.php', 'manage-section.php', 'manage-session.php'];
+    $is_class_active = in_array($current_page, $class_pages);
     ?>
     <li class="dropdown <?= $is_class_active ? 'active' : '' ?>">
       <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="home"></i><span>Class Information</span></a>
@@ -73,9 +75,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
       </ul>
     </li>
 
-    <?php 
-      $subject_pages = ['add-subject.php', 'subject-group.php'];
-      $is_subject_active = in_array($current_page, $subject_pages);
+    <?php
+    $subject_pages = ['add-subject.php', 'subject-group.php'];
+    $is_subject_active = in_array($current_page, $subject_pages);
     ?>
     <li class="dropdown <?= $is_subject_active ? 'active' : '' ?>">
       <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="book-open"></i><span>Manage Subject</span></a>
@@ -85,8 +87,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
       </ul>
     </li>
 
-    <?php 
-      $is_teacher_active = ($current_page == 'add-teacher.php');
+    <?php
+    $is_teacher_active = ($current_page == 'add-teacher.php');
     ?>
     <li class="dropdown <?= $is_teacher_active ? 'active' : '' ?>">
       <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="user-check"></i><span>Manage Teacher</span></a>
@@ -95,22 +97,22 @@ $current_page = basename($_SERVER['PHP_SELF']);
       </ul>
     </li>
 
-    <?php 
-      $transport_pages = ['transport.php', 'manage-route.php', 'manage-vehicle.php'];
-      $is_transport_active = in_array($current_page, $transport_pages);
+    <?php
+    $transport_pages = ['transport.php', 'manage-route.php', 'manage-vehicle.php'];
+    $is_transport_active = in_array($current_page, $transport_pages);
     ?>
     <li class="dropdown <?= $is_transport_active ? 'active' : '' ?>">
       <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="truck"></i><span>Transportation</span></a>
       <ul class="dropdown-menu" style="<?= $is_transport_active ? 'display: block;' : '' ?>">
-        <li class="<?= ($current_page == 'transport.php') ? 'active' : '' ?>"><a class="nav-link" href="transport.php">Transport</a></li>
+        <li class="<?= ($current_page == 'transport.php') ? 'active' : '' ?>"><a class="nav-link" href="transport.php">Pik_Drop Points</a></li>
         <li class="<?= ($current_page == 'manage-route.php') ? 'active' : '' ?>"><a class="nav-link" href="manage-route.php">Manage Route</a></li>
         <li class="<?= ($current_page == 'manage-vehicle.php') ? 'active' : '' ?>"><a class="nav-link" href="manage-vehicle.php">Manage Vehicle</a></li>
       </ul>
     </li>
 
-    <?php 
-      $fee_pages = ['fee-type.php', 'pay-fee.php', 'manage-fee-record.php', 'discount-type.php'];
-      $is_fee_active = in_array($current_page, $fee_pages);
+    <?php
+    $fee_pages = ['fee-type.php', 'pay-fee.php', 'manage-fee-record.php', 'discount-type.php'];
+    $is_fee_active = in_array($current_page, $fee_pages);
     ?>
     <li class="dropdown <?= $is_fee_active ? 'active' : '' ?>">
       <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="credit-card"></i><span>Fee Collection</span></a>
@@ -121,9 +123,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
       </ul>
     </li>
 
-    <?php 
-      $auth_pages = ['view_logs.php', 'register_admin.php'];
-      $is_auth_active = in_array($current_page, $auth_pages);
+    <?php
+    $auth_pages = ['view_logs.php', 'register_admin.php'];
+    $is_auth_active = in_array($current_page, $auth_pages);
     ?>
     <li class="dropdown <?= $is_auth_active ? 'active' : '' ?>">
       <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="lock"></i><span>Auth</span></a>

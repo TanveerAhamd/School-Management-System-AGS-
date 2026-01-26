@@ -16,7 +16,7 @@ if (isset($_GET['action'])) {
     exit;
   }
 
-  // Action: Global Fetch Students with Priority Status Logic
+  // Action: Global Fetch Students (Filters are Optional)
   if ($_GET['action'] == 'fetch_students_to_process') {
     $sess = $_GET['curr_session'] ?? '';
     $cls  = $_GET['curr_class'] ?? '';
@@ -44,9 +44,8 @@ if (isset($_GET['action'])) {
       $params[] = $sec;
     }
 
-    // Status Filter Logic
     if ($stat == 'Active') {
-      $query .= " AND s.is_deleted = 0 AND s.is_passout = 0 AND s.is_dropout = 0";
+      $query .= " AND s.is_deleted = 0";
     } elseif ($stat == 'Dropout') {
       $query .= " AND s.is_dropout = 1";
     } elseif ($stat == 'Passout') {
@@ -59,7 +58,7 @@ if (isset($_GET['action'])) {
     exit;
   }
 
-  // Action: Process Dropout/Passout (Media Migration + Status Update)
+  // Action: Process Dropout/Passout
   if ($_GET['action'] == 'process_students' && $_SERVER['REQUEST_METHOD'] == 'POST') {
     try {
       $ids = $_POST['student_ids'];
@@ -78,8 +77,7 @@ if (isset($_GET['action'])) {
         if ($files) {
           foreach ($files as $col => $path) {
             if (!empty($path) && file_exists($path)) {
-              // Rename with ID to prevent overwrite
-              $newPath = $trashFolder . $stId . "_" . basename($path);
+              $newPath = $trashFolder . basename($path);
               if (rename($path, $newPath)) {
                 $pdo->prepare("UPDATE students SET $col = ? WHERE id = ?")->execute([$newPath, $stId]);
               }
@@ -89,13 +87,12 @@ if (isset($_GET['action'])) {
 
         $is_pass = ($type === 'Passout') ? 1 : 0;
         $is_drop = ($type === 'Dropout') ? 1 : 0;
-        $remark = strtoupper("\n[System Log: Marked as $type on " . date('d-M-Y H:i') . "]");
+        $remark = strtoupper("Status: $type on " . date('d-M-Y H:i'));
 
-        // Mark as deleted but keep the specific Passout/Dropout flag
-        $sql = "UPDATE students SET is_deleted = 1, is_passout = ?, is_dropout = ?, remarks = CONCAT(IFNULL(remarks,''), ?) WHERE id = ?";
+        $sql = "UPDATE students SET is_deleted = 1, is_passout = ?, is_dropout = ?, remarks = CONCAT(IFNULL(remarks,''), '\n', ?) WHERE id = ?";
         $pdo->prepare($sql)->execute([$is_pass, $is_drop, $remark, $stId]);
       }
-      echo json_encode(['status' => 'success', 'message' => "Selected students successfully marked as $type."]);
+      echo json_encode(['status' => 'success', 'message' => "Selected students marked as $type."]);
     } catch (Exception $e) {
       echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
     }
@@ -113,7 +110,7 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-  <title>Student Archives Management | AGS Lodhran</title>
+  <title>Student Archives | AGS Lodhran</title>
   <link rel="stylesheet" href="assets/css/app.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/datatables.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css">
@@ -123,17 +120,21 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
   <link rel='shortcut icon' type='image/x-icon' href='assets/img/favicon.ico' />
   <style>
     #dropout_container .st-list-img {
-      height: 35px;
-      width: 35px;
+      height: 30px;
+      width: 30px;
       object-fit: cover;
       border-radius: 50%;
       border: 1px solid #ddd;
     }
+
     .badge-status {
       font-size: 10px;
-      padding: 5px 10px;
+      padding: 4px 8px;
       text-transform: uppercase;
-      font-weight: 700;
+    }
+
+    .dt-buttons {
+      margin-bottom: 15px;
     }
   </style>
 </head>
@@ -150,16 +151,17 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
         <section class="section">
           <div class="section-body">
 
+
             <div class="row bg-title">
               <div class="col-12">
-                <div class="card mb-3 shadow-sm">
+                <div class="card mb-3">
                   <div class="card-body py-2 b-0">
                     <div class="d-flex flex-wrap align-items-center justify-content-between">
-                      <h5 class="page-title mb-0"><i class="fas fa-user-shield"></i> Student Dropout & Passout Management</h5>
+                      <h5 class="page-title mb-0"><i class="fas fa-archive"></i> Student Dropout & Passout Archives</h5>
                       <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 bg-transparent p-0">
                           <li class="breadcrumb-item"><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Home</a></li>
-                          <li class="breadcrumb-item active">Archive_Process</li>
+                          <li class="breadcrumb-item active">Dropout_passout</li>
                         </ol>
                       </nav>
                     </div>
@@ -172,9 +174,9 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
               <div class="col-12">
                 <div class="card" id="dropout_container">
 
-                  <!-- ADVANCE FILTER PANEL -->
-                  <div class="card-body border-bottom bg-light">
-                    <div class="row align-items-end">
+                  <!-- FILTER PANEL -->
+                  <div class="card-body border-bottom bg-light-all">
+                    <div class="row">
                       <div class="col-md-2">
                         <label class="font-weight-bold small">Session</label>
                         <select id="f_session" class="form-control select2">
@@ -196,27 +198,27 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
                         </select>
                       </div>
                       <div class="col-md-3">
-                        <label class="font-weight-bold small">Filter by Status</label>
+                        <label class="font-weight-bold small">Current Status</label>
                         <select id="f_status" class="form-control select2">
-                          <option value="All">Complete History</option>
-                          <option value="Active" selected>Active Only (To Process)</option>
-                          <option value="Dropout">Dropout Archive</option>
-                          <option value="Passout">Passout Archive</option>
+                          <option value="All">All Records</option>
+                          <option value="Active" selected>Active Only</option>
+                          <option value="Dropout">Dropout Only</option>
+                          <option value="Passout">Passout Only</option>
                         </select>
                       </div>
                       <div class="col-md-3">
-                        <button type="button" id="btnSearch" class="btn btn-primary btn-block shadow-sm"><i class="fa fa-sync"></i> Fetch Data</button>
+                        <label class="d-block">&nbsp;</label>
+                        <button type="button" id="btnSearch" class="btn btn-primary btn-block shadow-sm"><i class="fa fa-search"></i> Fetch Data</button>
                       </div>
                     </div>
                   </div>
 
                   <div class="card-body">
                     <div class="mb-4 d-flex justify-content-between align-items-center">
-                      <h6 class="font-weight-bold text-muted small text-uppercase">Records List:</h6>
-                      <!-- Bulk Actions -->
+                      <h6 class="font-weight-bold text-muted small text-uppercase">Student Records:</h6>
                       <div id="action_btns_scoped" style="display:none;">
-                        <button type="button" class="btn btn-danger mr-2 btnAction shadow-sm" data-type="Dropout"><i class="fas fa-user-times"></i> Mark Dropout</button>
-                        <button type="button" class="btn btn-success btnAction shadow-sm" data-type="Passout"><i class="fas fa-user-graduate"></i> Mark Passout</button>
+                        <button type="button" class="btn btn-danger mr-2 btnAction" data-type="Dropout"><i class="fas fa-user-times"></i> Mark Dropout</button>
+                        <button type="button" class="btn btn-success btnAction" data-type="Passout"><i class="fas fa-user-graduate"></i> Mark Passout</button>
                       </div>
                     </div>
 
@@ -227,14 +229,15 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
                             <th width="5%"><input type="checkbox" id="masterCheck"></th>
                             <th>Reg#</th>
                             <th>Image</th>
-                            <th>Student Name</th>
-                            <th>Class (Section)</th>
-                            <th>Current Status</th>
+                            <th>Name</th>
+                            <th>Class</th>
+                            <th>Section</th>
+                            <th>Status</th>
                           </tr>
                         </thead>
                         <tbody id="student_list_container">
                           <tr>
-                            <td colspan="6" class="text-center">Please use filters above to load students.</td>
+                            <td colspan="7" class="text-center">Set filters to load students.</td>
                           </tr>
                         </tbody>
                       </table>
@@ -251,6 +254,8 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
     </div>
   </div>
 
+  <canvas id="hidden_canvas" style="display:none;"></canvas>
+
   <script src="assets/js/app.min.js"></script>
   <script src="assets/bundles/datatables/datatables.min.js"></script>
   <script src="assets/bundles/datatables/DataTables-1.10.16/js/dataTables.bootstrap4.min.js"></script>
@@ -260,6 +265,7 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
   <script src="assets/bundles/datatables/export-tables/pdfmake.min.js"></script>
   <script src="assets/bundles/datatables/export-tables/vfs_fonts.js"></script>
   <script src="assets/bundles/datatables/export-tables/buttons.print.min.js"></script>
+
   <script src="./assets/js/sweetalert2.js"></script>
   <script src="assets/js/scripts.js"></script>
   <script src="assets/js/custom.js"></script>
@@ -268,25 +274,25 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
     $(document).ready(function() {
       $('.loader').fadeOut('slow');
 
-      // 1. Dynamic Section Loader
-      $('#f_class').on('change', function() {
+      // 1. Scoped Section Loader
+      $('#dropout_container #f_class').on('change', function() {
         let cid = $(this).val();
         if (cid) {
           $.getJSON('passout_drop.php?action=fetch_sections&class_id=' + cid, function(data) {
             let h = '<option value="">All Sections</option>';
             data.forEach(d => h += `<option value="${d.id}">${d.section_name}</option>`);
-            $('#f_section').html(h);
+            $('#dropout_container #f_section').html(h);
           });
         }
       });
 
-      // 2. Master Checkbox Handler
-      $('#masterCheck').on('click', function() {
-        $('.st-cb').prop('checked', this.checked);
+      // 2. Master Checkbox
+      $('#dropout_container #masterCheck').on('click', function() {
+        $('#dropout_container .st-cb').prop('checked', this.checked);
       });
 
-      // 3. AJAX Fetch Students with Priority UI Logic
-      $('#btnSearch').click(function() {
+      // 3. AJAX Fetch Students + DataTable Export Initialization
+      $('#dropout_container #btnSearch').click(function() {
         let sess = $('#f_session').val(),
           cls = $('#f_class').val(),
           sec = $('#f_section').val(),
@@ -307,91 +313,78 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
           if (data.length > 0) {
             data.forEach(s => {
               let photo = s.student_photo ? s.student_photo : 'assets/img/userdummypic.png';
-              
-              // --- PRIORITY LOGIC FOR STATUS DISPLAY ---
-              let disp = 'Active';
-              let bCls = 'badge-primary';
-
-              if (s.is_passout == 1) {
-                disp = 'Passout';
-                bCls = 'badge-success';
-              } else if (s.is_dropout == 1) {
-                disp = 'Dropout';
-                bCls = 'badge-danger';
-              } else if (s.is_deleted == 1) {
-                disp = 'Archived';
-                bCls = 'badge-secondary';
-              }
+              let disp = s.is_passout == 1 ? 'Passout' : (s.is_dropout == 1 ? 'Dropout' : 'Active');
+              let bCls = s.is_passout == 1 ? 'badge-success' : (s.is_dropout == 1 ? 'badge-danger' : 'badge-primary');
 
               h += `<tr>
-                        <td class="text-center">
-                            ${(disp == 'Active') ? `<input type="checkbox" class="st-cb" value="${s.id}">` : `<i class="fa fa-lock text-muted" title="Processed Record"></i>`}
-                        </td>
-                        <td class="font-weight-bold">${s.reg_no}</td>
-                        <td><img src="${photo}" class="st-list-img shadow-sm"></td>
-                        <td class="text-uppercase small font-weight-bold">${s.student_name}</td>
-                        <td>${s.class_name || 'N/A'} (${s.section_name || 'N/A'})</td>
-                        <td><span class="badge ${bCls} badge-status">${disp}</span></td>
-                    </tr>`;
+                                <td>${(disp == 'Active') ? `<input type="checkbox" class="st-cb" value="${s.id}">` : `<i class="fa fa-lock text-muted"></i>`}</td>
+                                <td class="font-weight-bold">${s.reg_no}</td>
+                                <td><img src="${photo}" class="st-list-img"></td>
+                                <td class="text-uppercase small font-weight-bold">${s.student_name}</td>
+                                <td>${s.class_name || 'N/A'}</td>
+                                <td>${s.section_name || 'N/A'}</td>
+                                <td><span class="badge ${bCls} badge-status">${disp}</span></td>
+                            </tr>`;
             });
           }
 
-          $('#student_list_container').html(h || '<tr><td colspan="6" class="text-center">No matching records found.</td></tr>');
-          $('#masterCheck').prop('checked', false);
+          $('#dropout_container #student_list_container').html(h || '<tr><td colspan="7" class="text-center">No records found.</td></tr>');
+          $('#dropout_container #masterCheck').prop('checked', false);
 
-          // 4. DATATABLE WITH EXPORT & PDF THUMBNAILS
+          // INITIALIZE DATATABLE WITH EXPORT BUTTONS
           $('#archiveTable').DataTable({
             dom: 'Bfrtip',
             buttons: [
               'copy', 'csv', 'excel', 'print',
               {
                 extend: 'pdfHtml5',
-                orientation: 'portrait',
-                exportOptions: { columns: [1, 2, 3, 4, 5] },
+                exportOptions: {
+                  columns: [1, 2, 3, 4, 5, 6],
+                  stripHtml: false
+                },
                 customize: function(doc) {
                   for (var i = 1; i < doc.content[1].table.body.length; i++) {
-                    var imgElement = $('#archiveTable').DataTable().row(i - 1).node().querySelector('img');
-                    if (imgElement) {
-                        var canvas = document.createElement('canvas');
-                        canvas.width = imgElement.naturalWidth;
-                        canvas.height = imgElement.naturalHeight;
-                        var ctx = canvas.getContext('2d');
-                        ctx.drawImage(imgElement, 0, 0);
-                        var dataURL = canvas.toDataURL('image/png');
-                        doc.content[1].table.body[i][1] = { image: dataURL, width: 20 };
-                    }
+                    var canvas = document.createElement('canvas');
+                    var img = $('#archiveTable').DataTable().cell(i - 1, 2).node().querySelector('img');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, img.width, img.height);
+                    var dataURL = canvas.toDataURL('image/png');
+                    doc.content[1].table.body[i][1] = {
+                      image: dataURL,
+                      width: 20
+                    };
                   }
                 }
               }
             ]
           });
 
-          // Show/Hide bulk action buttons
           if (stat === 'Active' || stat === 'All') $('#action_btns_scoped').fadeIn();
           else $('#action_btns_scoped').fadeOut();
         });
       });
 
-      // 5. Bulk Processing Logic
-      $('.btnAction').click(function() {
+      // 4. Bulk Processing
+      $('#dropout_container .btnAction').click(function() {
         let type = $(this).data('type'),
           selected = [];
-        $('.st-cb:checked').each(function() {
+        $('#dropout_container .st-cb:checked').each(function() {
           selected.push($(this).val());
         });
 
         if (selected.length === 0) {
-          Swal.fire('Selection Required', 'Please check at least one student to mark as ' + type, 'warning');
+          Swal.fire('No Selection', 'Please select students to mark as ' + type, 'warning');
           return;
         }
 
         Swal.fire({
-          title: `Confirm ${type} Status?`,
-          text: `You are about to mark ${selected.length} students as ${type}. This action will archive their active record and migrate media files.`,
+          title: `Mark as ${type}?`,
+          text: `Warning: This moves ${selected.length} students to archives and shifts their media files.`,
           icon: 'warning',
           showCancelButton: true,
-          confirmButtonColor: (type === 'Passout' ? '#28a745' : '#dc3545'),
-          confirmButtonText: 'Yes, Process Now'
+          confirmButtonText: 'Yes, Process'
         }).then((res) => {
           if (res.isConfirmed) {
             $.post('passout_drop.php?action=process_students', {
@@ -400,10 +393,10 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
             }, function(response) {
               if (response.status === 'success') {
                 Swal.fire('Success!', response.message, 'success').then(() => {
-                  $('#btnSearch').click(); // Refresh list
+                  $('#dropout_container #btnSearch').click();
                 });
               } else {
-                Swal.fire('System Error', response.message, 'error');
+                Swal.fire('Error', response.message, 'error');
               }
             });
           }

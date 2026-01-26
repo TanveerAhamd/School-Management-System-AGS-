@@ -30,12 +30,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       $status_title = "خوش آمدید!";
       $status_type = "success";
     } else {
-      $status = "Pradan kiya gaya email ya password galat hai.";
+      $status = "Email Or Password Incorrect.";
       $status_title = "Login Nakama!";
       $status_type = "error";
     }
   } else {
-    $status = "Kripya login karne ke liye tamam malomat darj karein.";
+    $status = "Please fill all fields.";
     $status_title = "Fields Khali Hain!";
     $status_type = "info";
   }
@@ -44,6 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
@@ -64,7 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           <div class="col-12 col-sm-8 offset-sm-2 col-md-6 offset-md-3 col-lg-6 offset-lg-3 col-xl-4 offset-xl-4">
             <div class="card card-primary">
               <div class="align-items-center card-header d-flex flex-column justify-content-center">
-                <img src="./assets/img/agslogo.png" alt="Logo" class="img-fluid mb-2" style="max-height: 80px;">
+                <img src="./assets/img/AGHS Logo.png" alt="Logo" class="img-fluid mb-2" style="max-height: 80px;">
                 <h4>Login to Dashboard</h4>
               </div>
               <div class="card-body">
@@ -107,10 +108,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           timer: 3000,
           buttons: false,
         });
-        <?php 
-          unset($_SESSION['status']);
-          unset($_SESSION['status_title']);
-          unset($_SESSION['status_type']); 
+        <?php
+        unset($_SESSION['status']);
+        unset($_SESSION['status_title']);
+        unset($_SESSION['status_type']);
         ?>
       <?php endif; ?>
 
@@ -131,4 +132,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     });
   </script>
 </body>
+
 </html>

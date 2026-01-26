@@ -31,8 +31,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt = $pdo->prepare($sql);
 
                 if ($stmt->execute([$full_name, $email, $hashed_password])) {
-                    $status = "Admin account safalta-purvak bana diya gaya hai.";
-                    $status_title = "Registration Safal!";
+                    $status = "Admin account has been created successfully. Aap ab login kar sakte hain.";
+                    $status_title = "Registration Done!";
                     $status_type = "success";
                 }
             } catch (PDOException $e) {

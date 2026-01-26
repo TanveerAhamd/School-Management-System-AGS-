@@ -79,20 +79,9 @@ $st_q = $pdo->prepare("SELECT COUNT(CASE WHEN is_deleted=0 AND is_passout=0 AND 
 $st_q->execute($sess_param);
 $st = $st_q->fetch();
 
-// Fee Stats - Updated Logic for Separation
-$fee_sql = "SELECT 
-    -- Today's Separated Cash
-    SUM(CASE WHEN payment_date = CURDATE() AND fee_type_id > 0 THEN amount_paid ELSE 0 END) as d_college, 
-    SUM(CASE WHEN payment_date = CURDATE() AND fee_type_id = 0 THEN amount_paid ELSE 0 END) as d_transport, 
-    
-    -- Monthly Separated Cash
-    SUM(CASE WHEN payment_date LIKE '$this_month%' AND fee_type_id > 0 THEN amount_paid ELSE 0 END) as m_college, 
-    SUM(CASE WHEN payment_date LIKE '$this_month%' AND fee_type_id = 0 THEN amount_paid ELSE 0 END) as m_transport 
-    
-    FROM fee_payments WHERE $f_sess_cond";
-
-$fee_q = $pdo->prepare($fee_sql);
-$fee_q->execute($sess_param);
+// Fee Stats
+$fee_q = $pdo->prepare("SELECT SUM(CASE WHEN payment_date = ? THEN amount_paid ELSE 0 END) as daily, SUM(CASE WHEN payment_date LIKE ? AND fee_type_id > 0 THEN amount_paid ELSE 0 END) as m_college, SUM(CASE WHEN payment_date LIKE ? AND fee_type_id = 0 THEN amount_paid ELSE 0 END) as m_transport FROM fee_payments WHERE $f_sess_cond");
+$fee_q->execute(array_merge($sess_param, [$today, "$this_month%", "$this_month%"]));
 $fees = $fee_q->fetch();
 
 // Infrastructure
@@ -243,38 +232,25 @@ $c_female = array_column($cls_q, 'female_count');
                 </div>
               </div>
             </div>
-            <!-- College Fee Card -->
             <div class="col-xl-3 col-lg-6">
               <div class="card l-bg-green shadow-sm">
                 <div class="card-statistic-3">
                   <div class="card-icon card-icon-large"><i class="fa fa-university"></i></div>
                   <h4 class="card-title mb-3">College Fee</h4>
-                  <div class="stat-group">
-                    <span>Today Cash</span>
-                    <span class="badge bg-white text-dark">Rs. <?= number_format($fees['d_college'] ?? 0) ?></span>
-                  </div>
-                  <div class="stat-group">
-                    <span>This Month</span>
-                    <span class="badge bg-white text-dark">Rs. <?= number_format($fees['m_college'] ?? 0) ?></span>
-                  </div>
+                  <div class="stat-group"><span>Today Cash</span> <span class="badge bg-white text-dark"><?= number_format($fees['daily']) ?></span></div>
+                  <div class="stat-group"><span>This Month</span> <span class="badge bg-white text-dark"><?= number_format($fees['m_college']) ?></span></div>
+                  <!-- <div class="stat-group"><span>Status</span> <span class="badge badge-white">Active</span></div> -->
                 </div>
               </div>
             </div>
-
-            <!-- Transport Card -->
             <div class="col-xl-3 col-lg-6">
               <div class="card l-bg-orange shadow-sm">
                 <div class="card-statistic-3">
                   <div class="card-icon card-icon-large"><i class="fa fa-bus"></i></div>
                   <h4 class="card-title mb-3">Transport</h4>
-                  <div class="stat-group">
-                    <span>Today Cash</span>
-                    <span class="badge bg-white text-dark">Rs. <?= number_format($fees['d_transport'] ?? 0) ?></span>
-                  </div>
-                  <div class="stat-group">
-                    <span>This Month</span>
-                    <span class="badge bg-white text-dark">Rs. <?= number_format($fees['m_transport'] ?? 0) ?></span>
-                  </div>
+                  <div class="stat-group"><span>Today Cash</span> <span class="badge bg-white text-dark"><?= number_format($fees['daily']) ?></span></div>
+                  <div class="stat-group"><span>This Month</span> <span class="badge bg-white text-dark"><?= number_format($fees['m_transport']) ?></span></div>
+                  <!-- <div class="stat-group"><span>System</span> <span class="badge badge-white">Online</span></div> -->
                 </div>
               </div>
             </div>
@@ -348,7 +324,7 @@ $c_female = array_column($cls_q, 'female_count');
                       <div class="mb-3">
                         <div class="d-flex justify-content-between small font-weight-bold">
                           <span><?= htmlspecialchars($r['route_name']) ?></span>
-                          <span><?= $scount ?> Student</span>
+                          <span><?= $scount ?> Girls</span>
                         </div>
                         <div class="progress" style="height: 5px;">
                           <!-- Agar 0 students honge to progress bar khali nazar aayegi -->
@@ -559,9 +535,9 @@ $c_female = array_column($cls_q, 'female_count');
                               <td class="small"><?= date('d-M-Y', strtotime($s['admission_date'])) ?></td>
                               <td>
                                 <div class="d-flex">
-                                  <!-- <a href="student-edit-page.php?id=<?= $s['id'] ?>" class="btn btn-primary btn-sm mr-1" data-toggle="tooltip" title="Edit">
+                                  <a href="student-edit-page.php?id=<?= $s['id'] ?>" class="btn btn-primary btn-sm mr-1" data-toggle="tooltip" title="Edit">
                                     <i class="fas fa-pencil-alt"></i>
-                                  </a> -->
+                                  </a>
                                   <a href="student-detail-page.php?id=<?= $s['id'] ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="View Detail">
                                     <i class="fas fa-eye"></i>
                                   </a>

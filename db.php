@@ -24,4 +24,3 @@ try {
     // If connection fails, show error
     die("Database connection failed: " . $e->getMessage());
 }
-?>

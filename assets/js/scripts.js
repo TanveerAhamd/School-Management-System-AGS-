@@ -707,3 +707,37 @@ $(function () {
   // sticky header default set to true
   $("#sticky_header_setting").prop("checked", true);
 });
+
+
+
+$(document).ready(function () {
+  // 1. Live Search Keyup
+  $('#nav-universal-search').on('keyup', function () {
+    let query = $(this).val();
+    if (query.length > 1) {
+      $('#nav-search-results').fadeIn();
+      $.ajax({
+        url: 'search_student_ajax.php',
+        method: 'POST',
+        data: { query: query },
+        success: function (data) { $('#nav-search-data').html(data); }
+      });
+    } else { $('#nav-search-results').fadeOut(); }
+  });
+
+  // 2. Hide search when clicking outside
+  $(document).on('click', function (e) {
+    if (!$(e.target).closest('.search-element').length) { $('#nav-search-results').fadeOut(); }
+  });
+
+  // 3. Auto Filter on Load (If coming from another page)
+  const urlParams = new URLSearchParams(window.location.search);
+  const searchQuery = urlParams.get('global_search');
+  if (searchQuery && $('#tableExportImages').length) {
+    setTimeout(function () {
+      var table = $('#tableExportImages').DataTable();
+      table.search(searchQuery).draw();
+    }, 500);
+  }
+});
+

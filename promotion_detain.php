@@ -123,6 +123,23 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
             <div class="main-content" id="promotion_module">
                 <section class="section">
                     <div class="section-body">
+                        <div class="row bg-title">
+                            <div class="col-12">
+                                <div class="card mb-3">
+                                    <div class="card-body py-2 b-0">
+                                        <div class="d-flex flex-wrap align-items-center justify-content-between">
+                                            <h5 class="page-title mb-0">Student Promotion & Detain</h5>
+                                            <nav aria-label="breadcrumb">
+                                                <ol class="breadcrumb mb-0 bg-transparent p-0">
+                                                    <li class="breadcrumb-item"><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Home</a></li>
+                                                    <li class="breadcrumb-item active">Promote</li>
+                                                </ol>
+                                            </nav>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="card">
                             <div class="card-body ">
                                 <div class="row">

@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_student'])) {
 
     $sql = "INSERT INTO students (
             reg_no, admission_date, session, class_id, section_id, subject_group_id, 
-            student_name, cnic_bform, dob, gender, mother_language, cast, 
+            student_name, cnic_bform, dob, gender, mother_language, caste, 
             contact_no, address, guardian_name, relation, occupation, guardian_contact, 
             prev_school_name, last_class, passing_year, board_name, disability, 
             hafiz_quran, transport, route_id, interests, remarks, 
@@ -137,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_student'])) {
       $_POST['dob'],
       $_POST['gender'],
       $_POST['mother_language'],
-      $_POST['cast'],
+      $_POST['caste'],
       $_POST['contact_no'],
       $_POST['address'],
       $_POST['guardian_name'],
@@ -293,7 +293,7 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
 
                     <!-- LEFT SIDE -->
                     <div class="mb-2 mb-md-0">
-                      <h5 class="page-title mb-0"> </i> Manage Student (Add)</h5>
+                      <h5 class="page-title mb-0"> </i>Register Student</h5>
                     </div>
 
                     <!-- RIGHT SIDE -->
@@ -303,9 +303,7 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                           <li class="breadcrumb-item">
                             <a href="#"><i class="fas fa-tachometer-alt"></i> Home</a>
                           </li>
-                          <li class="breadcrumb-item">
-                            <a href="#"><i class="far fa-file"></i> Student</a>
-                          </li>
+
                           <li class="breadcrumb-item active" aria-current="page">
                             <i class="fas fa-list"></i> Add
                           </li>
@@ -354,20 +352,20 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                             Application Form For Registration </h6>
                         </div>
                         <div class="d-flex gap-2 justify-content-center mt-3 flex-wrap">
-                          <div><label class="fw-bold small">Session <span class="text-danger">*</span></label><select name="session_id" id="session_select" class="form-select form-select-sm" style="width:110px" required></select></div>
+                          <div><label class="fw-bold small">Session <span class="text-danger">*</span></label><select name="session_id" id="session_select" class="form-select form-select-sm" style="width:100px" required></select></div>
                           <div><label class="fw-bold small">Class <span class="text-danger">*</span></label>
-                            <select name="class_id" id="sel_class" class="form-select form-select-sm" style="width:110px" required>
+                            <select name="class_id" id="sel_class" class="form-select form-select-sm" style="width:100px" required>
                               <option value="">Select</option>
                               <?php foreach ($classes as $c): ?>
                                 <option value="<?= $c['id'] ?>" <?= (($_POST['class_id'] ?? '') == $c['id']) ? 'selected' : '' ?>><?= $c['class_name'] ?></option>
                               <?php endforeach; ?>
                             </select>
                           </div>
-                          <div><label class="fw-bold small">Section <span class="text-danger">*</span></label><select name="section_id" id="sel_section" class="form-select form-select-sm" style="width:110px" required>
+                          <div><label class="fw-bold small">Section <span class="text-danger">*</span></label><select name="section_id" id="sel_section" class="form-select form-select-sm" style="width:100px" required>
                               <option value="">Section</option>
                             </select></div>
                           <div><label class="fw-bold small">Group <span class="text-danger">*</span></label>
-                            <select name="subject_group_id" id="sel_group" class="form-select form-select-sm" style="width:110px" required>
+                            <select name="subject_group_id" id="sel_group" class="form-select form-select-sm" style="width:100px" required>
                               <option value="">Select</option>
                               <?php foreach ($groups_list as $g): ?>
                                 <option value="<?= $g['id'] ?>" <?= (($_POST['subject_group_id'] ?? '') == $g['id']) ? 'selected' : '' ?>><?= $g['group_name'] ?></option>
@@ -416,7 +414,7 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                   </div>
 
                   <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">Date of Birth <span class="text-danger">*</span></label>
+                    <label class="small fw-bold">Date of Birth: MM/DD/YYYY<span class="text-danger">*</span></label>
                     <input type="date" name="dob" value="<?= $_POST['dob'] ?? '' ?>" class="form-control" required>
                   </div>
 
@@ -439,11 +437,11 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                   </div>
 
                   <div class="col-md-2 mt-2">
-                    <label class="small fw-bold">Cast</label>
+                    <label class="small fw-bold">Caste</label>
                     <input
                       type="text"
-                      name="cast"
-                      value="<?= htmlspecialchars($_POST['cast'] ?? '') ?>"
+                      name="caste"
+                      value="<?= htmlspecialchars($_POST['caste'] ?? '') ?>"
                       class="form-control upper-case"
                       style="text-transform: uppercase;">
                   </div>

@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_student'])) {
     $gb = handleMediaUpdate('guardian_cnic_back', 'cam_gb_data', 'GBACK', $reg_clean, $name_clean, $folder, $id, $pdo);
     $rc = handleMediaUpdate('result_card_doc', 'cam_rc_data', 'RESULTCARD', $reg_clean, $name_clean, $folder, $id, $pdo);
 
-    $sql = "UPDATE students SET reg_no=?, admission_date=?, session=?, class_id=?, section_id=?, subject_group_id=?, student_name=?, cnic_bform=?, dob=?, gender=?, mother_language=?, cast=?, contact_no=?, address=?, guardian_name=?, relation=?, occupation=?, guardian_contact=?, prev_school_name=?, last_class=?, passing_year=?, board_name=?, disability=?, hafiz_quran=?, transport=?, route_id=?, interests=?, remarks=?, student_photo=?, cnic_doc=?, guardian_cnic_front=?, guardian_cnic_back=?, result_card_doc=? WHERE id=?";
+    $sql = "UPDATE students SET reg_no=?, admission_date=?, session=?, class_id=?, section_id=?, subject_group_id=?, student_name=?, cnic_bform=?, dob=?, gender=?, mother_language=?, caste=?, contact_no=?, address=?, guardian_name=?, relation=?, occupation=?, guardian_contact=?, prev_school_name=?, last_class=?, passing_year=?, board_name=?, disability=?, hafiz_quran=?, transport=?, route_id=?, interests=?, remarks=?, student_photo=?, cnic_doc=?, guardian_cnic_front=?, guardian_cnic_back=?, result_card_doc=? WHERE id=?";
 
     $pdo->prepare($sql)->execute([
       $_POST['reg_no'],
@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_student'])) {
       $_POST['dob'],
       $_POST['gender'],
       $_POST['mother_language'],
-      $_POST['cast'],
+      $_POST['caste'],
       $_POST['contact_no'],
       $_POST['address'],
       $_POST['guardian_name'],
@@ -154,14 +154,23 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
 
 <head>
   <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
   <title>Edit Student Profile | AGS Lodhran</title>
   <link rel="stylesheet" href="assets/css/app.min.css">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/custom.css">
+  <link rel='shortcut icon' type='image/x-icon' href='assets/img/favicon.ico' />
+
   <style>
     .logo-img {
-      height: 60px;
+      height: 40px;
+    }
+
+    @media (min-width: 576px) {
+      .logo-img {
+        height: 60px;
+      }
     }
 
     .badge-subject-item {
@@ -228,6 +237,24 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
       color: orange;
       display: none;
       margin-left: 10px;
+    }
+
+    .form-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #191d32;
+      border-bottom: 1px solid #ebedf2;
+      padding-bottom: 5px;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+    }
+
+    .office-use-box {
+      background: #fff;
+      border: 1px solid #e4e6fc;
+      border-radius: 5px;
+      padding: 15px;
+      height: 100%;
     }
   </style>
 </head>
@@ -317,13 +344,13 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                 <div class="row">
                   <div class="col-md-3 mt-2"><label class="small fw-bold">Name <span class="text-danger">*</span></label><input type="text" name="student_name" id="student_name" class="form-control" required></div>
                   <div class="col-md-3 mt-2"><label class="small fw-bold">CNIC / B-Form <span class="text-danger">*</span></label><input type="text" id="cnic_bform" name="cnic_bform" class="form-control" required></div>
-                  <div class="col-md-3 mt-2"><label class="small fw-bold">Date of Birth <span class="text-danger">*</span></label><input type="date" name="dob" id="dob" class="form-control" required></div>
+                  <div class="col-md-3 mt-2"><label class="small fw-bold">Date of Birth: MM/DD/YYYY<span class="text-danger">*</span></label><input type="date" name="dob" id="dob" class="form-control" required></div>
                   <div class="col-md-3 mt-2"><label class="small fw-bold">Gender</label><select name="gender" id="gender" class="form-control">
                       <option value="Female">Female</option>
                       <option value="Male">Male</option>
                     </select></div>
                   <div class="col-md-2 mt-2"><label class="small fw-bold">Language</label><input type="text" name="mother_language" id="mother_language" class="form-control"></div>
-                  <div class="col-md-2 mt-2"><label class="small fw-bold">Cast</label><input type="text" name="cast" id="cast" class="form-control"></div>
+                  <div class="col-md-2 mt-2"><label class="small fw-bold">Caste</label><input type="text" name="caste" id="caste" class="form-control"></div>
                   <div class="col-md-3 mt-2"><label class="small fw-bold">Contact #</label><input type="text" id="contact_no" name="contact_no" class="form-control"></div>
                   <div class="col-md-5 mt-2"><label class="small fw-bold">Address</label><input type="text" name="address" id="address" class="form-control"></div>
                 </div>
@@ -438,7 +465,7 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
   <!-- SCRIPTS -->
   <script src="assets/js/app.min.js"></script>
   <script src="assets/js/jquery.inputmask.min.js"></script>
-  <script src="assets/bundles/sweetalert/sweetalert.min.js"></script>
+  <script src="./assets/js/sweetalert2.js"></script>
 
   <script>
     // FIX PRELOADER: Force fade out on window load
@@ -463,7 +490,7 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
         $('#dob').val(s.dob);
         $('#gender').val(s.gender);
         $('#mother_language').val(s.mother_language);
-        $('#cast').val(s.cast);
+        $('#caste').val(s.caste);
         $('#contact_no').val(s.contact_no);
         $('#address').val(s.address);
         $('#guardian_name').val(s.guardian_name);

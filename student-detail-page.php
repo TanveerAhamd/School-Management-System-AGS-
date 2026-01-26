@@ -306,10 +306,10 @@ function formatMyDate($date)
                 </div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Student Name</label><span class="val-text"><?= $student['student_name'] ?></span></div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">B-Form / CNIC</label><span class="val-text"><?= $student['cnic_bform'] ?></span></div>
-                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Date of Birth</label><span class="val-text"><?= formatMyDate($student['dob']) ?></span></div>
+                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Date of Birth: MM/DD/YYYY</label><span class="val-text"><?= formatMyDate($student['dob']) ?></span></div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Gender</label><span class="val-text"><?= $student['gender'] ?></span></div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Mother Language</label><span class="val-text"><?= $student['mother_language'] ?></span></div>
-                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Caste</label><span class="val-text"><?= $student['cast'] ?></span></div>
+                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Caste</label><span class="val-text"><?= $student['caste'] ?></span></div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Contact #</label><span class="val-text"><?= $student['contact_no'] ?></span></div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Address</label><span class="val-text"><?= $student['address'] ?></span></div>
               </div>
