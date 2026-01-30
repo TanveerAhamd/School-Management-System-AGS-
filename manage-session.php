@@ -72,7 +72,7 @@ $sessions_list = $stmt_s->fetchAll();
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-  <title>Manage Sessions</title>
+  <title>Manage Sessions| AGS Lodhran</title>
   <link rel="stylesheet" href="assets/css/app.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/datatables.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css">
@@ -108,8 +108,7 @@ $sessions_list = $stmt_s->fetchAll();
                         <nav aria-label="breadcrumb">
                           <ol class="breadcrumb mb-0 bg-transparent p-0">
                             <li class="breadcrumb-item"><a href="#"><i class="fas fa-tachometer-alt"></i> Home</a></li>
-                            <li class="breadcrumb-item"><a href="#"><i class="far fa-calendar-alt"></i> Sessions</a></li>
-                            <li class="breadcrumb-item active"><i class="fas fa-list"></i> Manage</li>
+                            <li class="breadcrumb-item active"><i class="fas fa-list"></i> Session</li>
                           </ol>
                         </nav>
                       </div>

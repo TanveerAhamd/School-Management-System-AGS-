@@ -133,13 +133,27 @@ $stmt->execute($params);
 $students = $stmt->fetchAll();
 ?>
 
+<?php
+// ڈیٹا بیس سے اسکول کی تمام سیٹنگز فیچ کریں
+$school_settings = $pdo->query("SELECT * FROM school_settings LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+
+// ویری ایبلز سیٹ کریں (ڈیفالٹ ویلیوز کے ساتھ)
+$sch_name    = !empty($school_settings['school_name']) ? $school_settings['school_name'] : "Amina Girls High School";
+$sch_address = !empty($school_settings['address'])     ? $school_settings['address']     : "Adda Sikandri 21/MPR Gailywal, Lodhran";
+$sch_contact = !empty($school_settings['contact'])     ? $school_settings['contact']     : "0300-1234567";
+$sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $school_settings['logo']))
+  ? 'uploads/' . $school_settings['logo']
+  : 'assets/img/agslogo.png';
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-  <title>Global Fee Registry | AMINA GIRLS HIGH SCHOOL</title>
+  <title>Fee Registry | AGS Lodhran</title>
   <link rel="stylesheet" href="assets/css/app.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/datatables.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css">
@@ -178,7 +192,7 @@ $students = $stmt->fetchAll();
 
     .ledger-copy::before {
       content: "";
-      background-image: url('assets/img/AGHS Logo.png');
+      background-image: url('<?= htmlspecialchars($sch_logo) ?>');
       background-repeat: no-repeat;
       background-position: center;
       background-size: 200px;
@@ -464,9 +478,9 @@ $students = $stmt->fetchAll();
                 { ?>
                   <div class="ledger-copy shadow-sm">
                     <div class="row align-items-center border-bottom border-dark pb-2 mb-2">
-                      <div class="col-2"><img src="assets/img/AGHS Logo.png" style="width:50px" onerror="this.src='assets/img/favicon.ico'"></div>
+                      <div class="col-2"><img src="assets/img/agslogo.png" style="width:50px" onerror="this.src='assets/img/favicon.ico'"></div>
                       <div class="col-7 text-center">
-                        <h2 class="school-title" style="font-size:18px; font-weight:bold; margin:0;">AMINA GIRLS HIGH SCHOOL</h2>
+                        <h2 class="school-title" style="font-size:18px; font-weight:bold; margin:0;">Amina Girls High School</h2>
                         <p class="m-0 font-weight-bold" style="font-size:10px;">21/MPR-LODHRAN | <?= $type ?></p>
                         <h6 class="m-0" style="font-size:12px;">Student Fee Statement</h6>
                       </div>

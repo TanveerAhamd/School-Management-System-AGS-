@@ -113,7 +113,7 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-  <title>Student Archives Management | AGS Lodhran</title>
+  <title>Passout_Drop | AGS Lodhran</title>
   <link rel="stylesheet" href="assets/css/app.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/datatables.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css">
@@ -128,6 +128,7 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
       border-radius: 50%;
       border: 1px solid #ddd;
     }
+
     .badge-status {
       font-size: 10px;
       padding: 5px 10px;
@@ -154,7 +155,7 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
                 <div class="card mb-3 shadow-sm">
                   <div class="card-body py-2 b-0">
                     <div class="d-flex flex-wrap align-items-center justify-content-between">
-                      <h5 class="page-title mb-0"><i class="fas fa-user-shield"></i> Student Dropout & Passout Management</h5>
+                      <h5 class="page-title mb-0"><i class="fas fa-user-shield"></i>Dropout & Passout</h5>
                       <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 bg-transparent p-0">
                           <li class="breadcrumb-item"><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Home</a></li>
@@ -306,7 +307,7 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
           if (data.length > 0) {
             data.forEach(s => {
               let photo = s.student_photo ? s.student_photo : 'assets/img/userdummypic.png';
-              
+
               // --- PRIORITY LOGIC FOR STATUS DISPLAY ---
               let disp = 'Active';
               let bCls = 'badge-primary';
@@ -346,18 +347,23 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
               {
                 extend: 'pdfHtml5',
                 orientation: 'portrait',
-                exportOptions: { columns: [1, 2, 3, 4, 5] },
+                exportOptions: {
+                  columns: [1, 2, 3, 4, 5]
+                },
                 customize: function(doc) {
                   for (var i = 1; i < doc.content[1].table.body.length; i++) {
                     var imgElement = $('#archiveTable').DataTable().row(i - 1).node().querySelector('img');
                     if (imgElement) {
-                        var canvas = document.createElement('canvas');
-                        canvas.width = imgElement.naturalWidth;
-                        canvas.height = imgElement.naturalHeight;
-                        var ctx = canvas.getContext('2d');
-                        ctx.drawImage(imgElement, 0, 0);
-                        var dataURL = canvas.toDataURL('image/png');
-                        doc.content[1].table.body[i][1] = { image: dataURL, width: 20 };
+                      var canvas = document.createElement('canvas');
+                      canvas.width = imgElement.naturalWidth;
+                      canvas.height = imgElement.naturalHeight;
+                      var ctx = canvas.getContext('2d');
+                      ctx.drawImage(imgElement, 0, 0);
+                      var dataURL = canvas.toDataURL('image/png');
+                      doc.content[1].table.body[i][1] = {
+                        image: dataURL,
+                        width: 20
+                      };
                     }
                   }
                 }

@@ -84,7 +84,7 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-    <title>Promotion & Detain | AGS</title>
+    <title>Promotion & Detain | AGS Lodhran</title>
     <link rel="stylesheet" href="assets/css/app.min.css">
     <link rel="stylesheet" href="assets/bundles/datatables/datatables.min.css">
     <link rel="stylesheet" href="assets/bundles/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css">
@@ -128,7 +128,7 @@ $sessions = $pdo->query("SELECT * FROM academic_sessions ORDER BY id DESC")->fet
                                 <div class="card mb-3">
                                     <div class="card-body py-2 b-0">
                                         <div class="d-flex flex-wrap align-items-center justify-content-between">
-                                            <h5 class="page-title mb-0">Student Promotion & Detain</h5>
+                                            <h5 class="page-title mb-0">Promotion & Detain</h5>
                                             <nav aria-label="breadcrumb">
                                                 <ol class="breadcrumb mb-0 bg-transparent p-0">
                                                     <li class="breadcrumb-item"><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Home</a></li>

@@ -3,6 +3,19 @@
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 
+<?php
+// ڈیٹا بیس سے اسکول کی تمام سیٹنگز فیچ کریں
+$school_settings = $pdo->query("SELECT * FROM school_settings LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+
+// ویری ایبلز سیٹ کریں (ڈیفالٹ ویلیوز کے ساتھ)
+$sch_name    = !empty($school_settings['school_name']) ? $school_settings['school_name'] : "Amina Girls High School";
+$sch_address = !empty($school_settings['address'])     ? $school_settings['address']     : "Adda Sikandri 21/MPR Gailywal, Lodhran";
+$sch_contact = !empty($school_settings['contact'])     ? $school_settings['contact']     : "0300-1234567";
+$sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $school_settings['logo']))
+  ? 'uploads/' . $school_settings['logo']
+  : 'assets/img/agslogo.png';
+?>
+
 <style>
   /* Dropdown ke andar jo active link hai uska style */
   .sidebar-menu .dropdown-menu li.active a {
@@ -33,7 +46,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <aside id="sidebar-wrapper">
   <div class="sidebar-brand">
     <a href="dashboard.php">
-      <img alt="image" src="assets/img/AGHS Logo.png" class="header-logo" />
+      <img alt="image" src="<?= $sch_logo ?>" class="header-logo" />
       <span class="logo-name">AGHS</span>
     </a>
   </div>
@@ -124,14 +137,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
     </li>
 
     <?php
-    $auth_pages = ['view_logs.php', 'register_admin.php'];
+    $auth_pages = ['view_logs.php', 'register_admin.php', 'settings.php'];
     $is_auth_active = in_array($current_page, $auth_pages);
     ?>
     <li class="dropdown <?= $is_auth_active ? 'active' : '' ?>">
-      <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="lock"></i><span>Auth</span></a>
+      <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="lock"></i><span>Settings</span></a>
       <ul class="dropdown-menu" style="<?= $is_auth_active ? 'display: block;' : '' ?>">
+        <li class="<?= ($current_page == 'settings.php') ? 'active' : '' ?>"><a class="nav-link" href="settings.php">School Profile</a></li>
         <li class="<?= ($current_page == 'view_logs.php') ? 'active' : '' ?>"><a class="nav-link" href="view_logs.php">View Logs</a></li>
-        <li class="<?= ($current_page == 'register_admin.php') ? 'active' : '' ?>"><a class="nav-link" href="register_admin.php">Register</a></li>
       </ul>
     </li>
   </ul>

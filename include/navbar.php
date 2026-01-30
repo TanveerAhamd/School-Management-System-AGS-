@@ -1,182 +1,88 @@
-      <nav class="navbar navbar-expand-lg main-navbar sticky">
-        <div class="form-inline mr-auto">
-          <ul class="navbar-nav mr-3">
-            <li><a href="#" data-toggle="sidebar" class="nav-link nav-link-lg
-									collapse-btn"> <i data-feather="align-justify"></i></a></li>
-            <li><a href="#" class="nav-link nav-link-lg fullscreen-btn">
+<?php
+// 1. ڈیٹا بیس سے ایڈمن کی تازہ ترین معلومات نکالنا
+if (isset($_SESSION['admin_id'])) {
+    $admin_id = $_SESSION['admin_id'];
+    $st_admin = $pdo->prepare("SELECT full_name, profile_pic FROM admins WHERE id = ?");
+    $st_admin->execute([$admin_id]);
+    $admin_data = $st_admin->fetch(PDO::FETCH_ASSOC);
+
+    // نام اور تصویر سیٹ کرنا
+    $display_name = $admin_data['full_name'] ?? 'Admin';
+    $display_pic = (!empty($admin_data['profile_pic']) && file_exists('uploads/' . $admin_data['profile_pic'])) 
+                   ? 'uploads/' . $admin_data['profile_pic'] 
+                   : 'assets/img/user.png';
+} else {
+    $display_name = "Admin";
+    $display_pic = "assets/img/user.png";
+}
+?>
+
+<nav class="navbar navbar-expand-lg main-navbar sticky">
+    <div class="form-inline mr-auto">
+        <ul class="navbar-nav mr-3">
+            <li><a href="#" data-toggle="sidebar" class="nav-link nav-link-lg collapse-btn"> <i data-feather="align-justify"></i></a></li>
+            <li class="d-none d-md-block"><a href="#" class="nav-link nav-link-lg fullscreen-btn">
                 <i data-feather="maximize"></i>
-              </a></li>
-
-          </ul>
-        </div>
-
-        <!-- filter session start -->
-        <?php
-        // Current page detection
-        $current_page = basename($_SERVER['PHP_SELF']);
-        ?>
-
-        <!-- Filter Session Section -->
-        <?php if ($current_page == 'dashboard.php'): ?>
-          <!-- Yeh sirf dashboard.php par nazar aaye ga -->
-          <div class="card-footer bg-white py-2 d-flex justify-content-end" style="border-radius: 0 0 15px 15px;">
-            <form method="GET" class="form-inline">
-              <span class="mr-2 font-weight-bold small text-dark">Filter Session:</span>
-              <select name="session_id" class="form-control form-control-sm select2" onchange="this.form.submit()" style="width: 160px;">
-                <option value="all" <?= (isset($f_sess) && $f_sess == 'all' ? 'selected' : '') ?>>All Sessions</option>
+            </a></li>
+            <li> <!-- filter session start -->
                 <?php
-                if (isset($sessions)) {
-                  foreach ($sessions as $s) {
-                    echo "<option value='{$s['id']}' " . (isset($f_sess) && $f_sess == $s['id'] ? 'selected' : '') . ">{$s['session_name']}</option>";
-                  }
-                }
+                // Current page detection
+                $current_page = basename($_SERVER['PHP_SELF']);
                 ?>
-              </select>
-            </form>
-          </div>
-        <?php else: ?>
-          <!-- Baki pages par ya toh khali rkhden ya dropdown ko disable krden -->
-          <div class="card-footer bg-white py-2 d-flex justify-content-end" style="border-radius: 0 0 15px 15px; opacity: 0.6;">
-            <span class="mr-2 font-weight-bold small text-muted">Filter Session:</span>
-            <select class="form-control form-control-sm" disabled style="width: 160px;">
-              <option>Not Available</option>
-            </select>
-          </div>
-        <?php endif; ?>
-        <!-- filter session close -->
-        <ul class="navbar-nav navbar-right">
-          <li class="dropdown dropdown-list-toggle"><a href="#" data-toggle="dropdown"
-              class="nav-link nav-link-lg message-toggle"><i data-feather="mail"></i>
-              <span class="badge headerBadge1">
-                6 </span> </a>
-            <div class="dropdown-menu dropdown-list dropdown-menu-right pullDown">
-              <div class="dropdown-header">
-                Messages
-                <div class="float-right">
-                  <a href="#">Mark All As Read</a>
-                </div>
-              </div>
 
-              <div class="dropdown-list-content dropdown-list-message">
-                <a href="#" class="dropdown-item"> <span class="dropdown-item-avatar
-											text-white"> <img alt="image" src="assets/img/users/user-1.png" class="rounded-circle">
-                  </span> <span class="dropdown-item-desc"> <span class="message-user">John
-                      Deo</span>
-                    <span class="time messege-text">Please check your mail !!</span>
-                    <span class="time">2 Min Ago</span>
-                  </span>
-                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-avatar text-white">
-                    <img alt="image" src="assets/img/users/user-2.png" class="rounded-circle">
-                  </span> <span class="dropdown-item-desc"> <span class="message-user">
-                      <?= $admin_name ?>
-                    </span> <span class="time messege-text">Request for leave
-                      application</span>
-                    <span class="time">5 Min Ago</span>
-                  </span>
-                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-avatar text-white">
-                    <img alt="image" src="assets/img/users/user-5.png" class="rounded-circle">
-                  </span> <span class="dropdown-item-desc"> <span class="message-user">Jacob
-                      Ryan</span> <span class="time messege-text">Your payment invoice is
-                      generated.</span> <span class="time">12 Min Ago</span>
-                  </span>
-                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-avatar text-white">
-                    <img alt="image" src="assets/img/users/user-4.png" class="rounded-circle">
-                  </span> <span class="dropdown-item-desc"> <span class="message-user">Lina
-                      Smith</span> <span class="time messege-text">hii John, I have upload
-                      doc
-                      related to task.</span> <span class="time">30
-                      Min Ago</span>
-                  </span>
-                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-avatar text-white">
-                    <img alt="image" src="assets/img/users/user-3.png" class="rounded-circle">
-                  </span> <span class="dropdown-item-desc"> <span class="message-user">Jalpa
-                      Joshi</span> <span class="time messege-te xt">Please do as specify.
-                      Let me
-                      know if you have any query.</span> <span cla ss="time">1
-                      Days Ago</span>
-                  </span>
-                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-avatar text-white">
-                    <img alt="image" src="assets/img/users/user-2.png" class="rounded-circle">
-                  </span> <span class="dropdown-item-desc"> <span class="message-user">
-                      <?= $admin_name ?>
-                    </span> <span class="time messege-text">Client Requirements</span>
-                    <span class="time">2 Days Ago</span>
-                  </span>
-                </a>
-              </div>
-              <div class="dropdown-footer text-center">
-                <a href="#">View All <i class="fas fa-chevron-right"></i></a>
-              </div>
-            </div>
-          </li>
-          <li class="dropdown dropdown-list-toggle"><a href="#" data-toggle="dropdown"
-              class="nav-link notification-toggle nav-link-lg"><i data-feather="bell" class="bell"></i>
-            </a>
-            <div class="dropdown-menu dropdown-list dropdown-menu-right pullDown">
-              <div class="dropdown-header">
-                Notifications
-                <div class="float-right">
-                  <a href="#">Mark All As Read</a>
-                </div>
-              </div>
-              <div class="dropdown-list-content dropdown-list-icons">
-                <a href="#" class="dropdown-item dropdown-item-unread"> <span
-                    class="dropdown-item-icon bg-primary text-white"> <i class="fas
-												fa-code"></i>
-                  </span> <span class="dropdown-item-desc"> Template update is
-                    available now! <span class="time">2 Min
-                      Ago</span>
-                  </span>
-                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-icon bg-info text-white"> <i class="far
-												fa-user"></i>
-                  </span> <span class="dropdown-item-desc"> <b>You</b> and <b>Dedik
-                      Sugiharto</b> are now friends <span class="time">10 Hours
-                      Ago</span>
-                  </span>
-                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-icon bg-success text-white"> <i
-                      class="fas
-												fa-check"></i>
-                  </span> <span class="dropdown-item-desc"> <b>Kusnaedi</b> has
-                    moved task <b>Fix bug header</b> to <b>Done</b> <span class="time">12
-                      Hours
-                      Ago</span>
-                  </span>
-                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-icon bg-danger text-white"> <i
-                      class="fas fa-exclamation-triangle"></i>
-                  </span> <span class="dropdown-item-desc"> Low disk space. Let's
-                    clean it! <span class="time">17 Hours Ago</span>
-                  </span>
-                </a> <a href="#" class="dropdown-item"> <span class="dropdown-item-icon bg-info text-white"> <i class="fas
-												fa-bell"></i>
-                  </span> <span class="dropdown-item-desc"> Welcome to Otika
-                    template! <span class="time">Yesterday</span>
-                  </span>
-                </a>
-              </div>
-              <div class="dropdown-footer text-center">
-                <a href="#">View All <i class="fas fa-chevron-right"></i></a>
-              </div>
-            </div>
-          </li>
-          <li class="dropdown"><a href="#" data-toggle="dropdown"
-              class="nav-link dropdown-toggle nav-link-lg nav-link-user"> <img alt="image" src="assets/img/user.png"
-                class="user-img-radious-style"> <span class="d-sm-none d-lg-inline-block"></span></a>
-            <div class="dropdown-menu dropdown-menu-right pullDown">
-              <div class="dropdown-title">Hello <?= $admin_name ?></div>
-              <!-- <a href="profile.html" class="dropdown-item has-icon"> <i class="far
-										fa-user"></i> Profile
-              </a> -->
-              <!-- <a href="view_logs.php" class="dropdown-item has-icon"> <i class="fas fa-bolt"></i>
-                Activities
-              </a> <a href="#" class="dropdown-item has-icon"> <i class="fas fa-cog"></i> -->
-              <!-- Settings
-              </a> -->
-              <div class="dropdown-divider"></div>
-              <a href="logout.php" class="dropdown-item has-icon text-danger"> <i class="fas fa-sign-out-alt"></i>
-                Logout
-              </a>
-
-            </div>
-          </li>
+                <!-- Filter Session Section -->
+                <?php if ($current_page == 'dashboard.php'): ?>
+                    <!-- Yeh sirf dashboard.php par nazar aaye ga -->
+                    <div class="card-footer bg-white py-2 d-flex justify-content-end" style="border-radius: 0 0 15px 15px;">
+                        <form method="GET" class="form-inline">
+                            <span class=" d-none d-md-block mr-2 font-weight-bold small text-dark">Filter Session:</span>
+                            <select name="session_id" class="form-control form-control-sm select2" onchange="this.form.submit()">
+                                <option value="all" <?= (isset($f_sess) && $f_sess == 'all' ? 'selected' : '') ?>>All Sessions</option>
+                                <?php
+                                if (isset($sessions)) {
+                                    foreach ($sessions as $s) {
+                                        echo "<option value='{$s['id']}' " . (isset($f_sess) && $f_sess == $s['id'] ? 'selected' : '') . ">{$s['session_name']}</option>";
+                                    }
+                                }
+                                ?>
+                            </select>
+                        </form>
+                    </div>
+                <?php else: ?>
+                    <!-- Baki pages par ya toh khali rkhden ya dropdown ko disable krden -->
+                    <div class="align-items-baseline bg-white card-footer d-flex justify-content-end py-2" style="border-radius: 0 0 15px 15px; opacity: 0.6;">
+                        <span class="d-none d-md-block mr-2 font-weight-bold small text-muted">Filter Session:</span>
+                        <select class="form-control form-control-sm" disabled>
+                            <option>Not Available</option>
+                        </select>
+                    </div>
+                <?php endif; ?>
+            </li>
         </ul>
-      </nav>
+    </div>
+
+    <!-- filter session close -->
+    <ul class="navbar-nav navbar-right">
+        <li class="dropdown">
+            <a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user"> 
+                <!-- ایڈمن کی تصویر یہاں نظر آئے گی -->
+                <img alt="image" src="<?= $display_pic ?>" class="user-img-radious-style" style="width:30px; height:30px; object-fit:cover;"> 
+                <span class="d-sm-none d-lg-inline-block"></span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right pullDown">
+                <!-- ایڈمن کا نام یہاں نظر آئے گا -->
+                <div class="dropdown-title">Hello, <?= htmlspecialchars($display_name) ?></div>
+
+                <!-- سیٹنگز کا لنک -->
+                <a href="settings.php" class="dropdown-item has-icon"> 
+                    <i class="far fa-user"></i> Profile Settings
+                </a>
+
+                <div class="dropdown-divider"></div>
+                <a href="logout.php" class="dropdown-item has-icon text-danger"> <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            </div>
+        </li>
+    </ul>
+</nav>

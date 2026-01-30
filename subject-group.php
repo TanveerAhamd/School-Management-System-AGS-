@@ -101,7 +101,7 @@ $groups_list = $pdo->query("SELECT sg.*, c.class_name FROM subject_groups sg JOI
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-  <title>Manage Subject Group</title>
+  <title>Subject Group | AGS Lodhran</title>
   <link rel="stylesheet" href="assets/css/app.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/datatables.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css">
@@ -127,11 +127,11 @@ $groups_list = $pdo->query("SELECT sg.*, c.class_name FROM subject_groups sg JOI
               <div class="col-12">
                 <div class="card mb-3 py-2">
                   <div class="card-body d-flex align-items-center justify-content-between py-1">
-                    <h5 class="page-title mb-0">Manage Subject Group</h5>
+                    <h5 class="page-title mb-0">Subject Group</h5>
                     <nav aria-label="breadcrumb">
                       <ol class="breadcrumb mb-0 bg-transparent p-0">
                         <li class="breadcrumb-item"><a href="dashboard.php">Home</a></li>
-                        <li class="breadcrumb-item active">Group Subject</li>
+                        <li class="breadcrumb-item active">Subject_Group</li>
                       </ol>
                     </nav>
                   </div>

@@ -190,6 +190,19 @@ $classes = $pdo->query("SELECT * FROM classes")->fetchAll();
 $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
 ?>
 
+<?php
+// ڈیٹا بیس سے اسکول کی تمام سیٹنگز فیچ کریں
+$school_settings = $pdo->query("SELECT * FROM school_settings LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+
+// ویری ایبلز سیٹ کریں (ڈیفالٹ ویلیوز کے ساتھ)
+$sch_name    = !empty($school_settings['school_name']) ? $school_settings['school_name'] : "Amina Girls High School";
+$sch_address = !empty($school_settings['address'])     ? $school_settings['address']     : "Adda Sikandri 21/MPR Gailywal, Lodhran";
+$sch_contact = !empty($school_settings['contact'])     ? $school_settings['contact']     : "0300-1234567";
+$sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $school_settings['logo']))
+  ? 'uploads/' . $school_settings['logo']
+  : 'assets/img/agslogo.png';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -322,7 +335,6 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                           <li class="breadcrumb-item">
                             <a href="#"><i class="fas fa-tachometer-alt"></i> Home</a>
                           </li>
-
                           <li class="breadcrumb-item active" aria-current="page">
                             <i class="fas fa-list"></i> Add
                           </li>
@@ -347,11 +359,13 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                       <div class="col-md-3 text-center">
                         <div class="d-flex align-items-end justify-content-between justify-content-md-center flex-wrap">
 
+                          <!-- 1. Dynamic Logo -->
                           <picture class="d-flex justify-content-center">
-                            <source media="(min-width: 576px)" srcset="./assets/img/agslogo.png">
-                            <img src="./assets/img/agslogo.png" alt="Logo" class="logo-img d-block">
+                            <source media="(min-width: 576px)" srcset="<?= $sch_logo ?>">
+                            <img src="<?= $sch_logo ?>" alt="School Logo" class="logo-img d-block" style="max-height: 90px; width: auto; object-fit: contain;">
                           </picture>
-                          <!-- <img src="./assets/img/agslogo.png" alt="Logo" class="logo-img"> -->
+                          <!-- --- Final Dynamic School Profile Package Start --- -->
+
                           <div class="mt-0 mt-md-2 d-flex justify-content-center flex-column">
                             <label class=" d-none d-md-block fw-bold small">Reg #: <span class="text-danger">*</span></label>
                             <input type="text" name="reg_no" value="<?= isset($_POST['reg_no']) ? htmlspecialchars($_POST['reg_no']) : $new_reg_no ?>" class="form-control form-control-sm border-0 border-bottom text-center fw-bold" required>
@@ -361,14 +375,19 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                       </div>
 
                       <div class="col-md-9">
-                        <h5 class="d-md-none text-center text-nowrap my-2">Amina Girls Degree College</h5>
-                        <h2 class="d-none d-md-block text-center text-nowrap m-0">Amina Girls Degree College</h2>
+                        <!-- 2. Dynamic Title (Responsive) -->
+                        <h5 class="d-md-none text-center text-nowrap my-2 font-weight-bold"><?= htmlspecialchars($sch_name) ?></h5>
+                        <h2 class="d-none d-md-block text-center text-nowrap m-0 font-weight-bold" style="letter-spacing: 2px;">
+                          <?= htmlspecialchars($sch_name) ?>
+                        </h2>
                         <div class="text-center">
-                          <span class="">Address: Gailywal 21-MPR lodhran</span>
+                          <span class="text-center text-muted  py-3">
+                            <i class="fas fa-map-marker-alt text-danger"></i> <?= htmlspecialchars($sch_address) ?>
+                          </span>
                           <br>
                           <h6
-                            class=" mt-2 rounded bg-primary px-3 py-1 d-inline-block text-white text-center mb-0 font-weight-bold">
-                            Application Form For Registration </h6>
+                            class=" mt-2 rounded bg-primary px-3 py-2 my-2 d-inline-block text-white text-center mb-0 font-weight-bold">
+                            Student Registration Form </h6>
                         </div>
                         <div class="d-flex gap-2 justify-content-center mt-3 flex-wrap">
                           <div><label class="fw-bold small">Session <span class="text-danger">*</span></label><select name="session_id" id="session_select" class="form-select form-select-sm" style="width:100px" required></select></div>

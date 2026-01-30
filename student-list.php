@@ -97,7 +97,7 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-  <title>Student List | AGS 21/MPR Lodhran</title>
+  <title>Student List | AGS Lodhran</title>
   <link rel="stylesheet" href="assets/css/app.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/datatables.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css">
@@ -148,11 +148,11 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
               <div class="col-12">
                 <div class="card mb-3">
                   <div class="card-body py-2 b-0 d-flex justify-content-between align-items-center">
-                    <h5 class="page-title mb-0">Global Student Registry (All Statuses)</h5>
+                    <h5 class="page-title mb-0">Students List </h5>
                     <nav aria-label="breadcrumb">
                       <ol class="breadcrumb mb-0 bg-transparent p-0">
                         <li class="breadcrumb-item"><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Home</a></li>
-                        <li class="breadcrumb-item active">Registry</li>
+                        <li class="breadcrumb-item active">All</li>
                       </ol>
                     </nav>
                   </div>

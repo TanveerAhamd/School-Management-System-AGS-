@@ -112,7 +112,7 @@ try {
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-  <title>Manage Teacher</title>
+  <title>Manage Teacher| AGS Lodhran</title>
   <link rel="stylesheet" href="assets/css/app.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/datatables.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css">
@@ -150,9 +150,6 @@ try {
                           <ol class="breadcrumb mb-0 bg-transparent p-0">
                             <li class="breadcrumb-item">
                               <a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Home</a>
-                            </li>
-                            <li class="breadcrumb-item">
-                              <a href="#"><i class="far fa-file"></i> Manage Teacher</a>
                             </li>
                             <li class="breadcrumb-item active" aria-current="page">
                               <i class="fas fa-list"></i> Teacher

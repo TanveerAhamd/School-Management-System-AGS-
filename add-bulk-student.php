@@ -29,9 +29,9 @@ if (isset($_POST['import_bulk'])) {
   try {
     if ($_FILES['student_file']['size'] > 0) {
       $handle = fopen($_FILES['student_file']['tmp_name'], "r");
-      
+
       $pdo->beginTransaction();
-      
+
       // SQL with ALL 33 Fields
       $sql = "INSERT INTO students (
                 reg_no, admission_date, session, class_id, section_id, 
@@ -54,28 +54,28 @@ if (isset($_POST['import_bulk'])) {
             )";
 
       $stmt = $pdo->prepare($sql);
-      
+
       $headerFound = false; // Flag for finding the real data start
 
       while (($col = fgetcsv($handle, 10000, ",")) !== FALSE) {
-        
+
         // Step A: Look for the real Header Row "Reg No"
         if (trim($col[0]) == 'Reg No') {
-            $headerFound = true;
-            continue; // Skip the header itself
+          $headerFound = true;
+          continue; // Skip the header itself
         }
 
         // Step B: Ignore metadata rows (starting with #) or if header not found yet
         if (!$headerFound || empty($col[0]) || strpos($col[0], '#') === 0) {
-            continue;
+          continue;
         }
 
         // Step C: Process Actual Data
         $adm_date = (!empty($col[1])) ? date('Y-m-d', strtotime($col[1])) : date('Y-m-d');
         $dob      = (!empty($col[9])) ? date('Y-m-d', strtotime($col[9])) : NULL;
-        
+
         // Logic: Transport Route ID
-        $transport_val = trim($col[29]); 
+        $transport_val = trim($col[29]);
         $route_id      = (strtolower($transport_val) == 'yes' && !empty($col[30])) ? $col[30] : NULL;
 
         $stmt->execute([
@@ -89,23 +89,23 @@ if (isset($_POST['import_bulk'])) {
           strtoupper($col[7]), // 7. Name
           $col[8],             // 8. CNIC
           $dob,                // 9. DOB
-          strtoupper($col[10]),// 10. Gender
-          strtoupper($col[11]),// 11. Lang
-          strtoupper($col[12]),// 12. Caste
-          strtoupper($col[13]),// 13. Tehsil
-          strtoupper($col[14]),// 14. District
+          strtoupper($col[10]), // 10. Gender
+          strtoupper($col[11]), // 11. Lang
+          strtoupper($col[12]), // 12. Caste
+          strtoupper($col[13]), // 13. Tehsil
+          strtoupper($col[14]), // 14. District
           $col[15],            // 15. Contact
-          strtoupper($col[16]),// 16. Address
-          strtoupper($col[17]),// 17. G Name
+          strtoupper($col[16]), // 16. Address
+          strtoupper($col[17]), // 17. G Name
           $col[18],            // 18. Relation
-          strtoupper($col[19]),// 19. Occupation
+          strtoupper($col[19]), // 19. Occupation
           $col[20],            // 20. G CNIC
           $col[21],            // 21. G Contact
-          strtoupper($col[22]),// 22. G Address
-          strtoupper($col[23]),// 23. Prev School
+          strtoupper($col[22]), // 22. G Address
+          strtoupper($col[23]), // 23. Prev School
           $col[24],            // 24. Last Class
           $col[25],            // 25. Passing Year
-          strtoupper($col[26]),// 26. Board
+          strtoupper($col[26]), // 26. Board
           $col[27],            // 27. Disability
           $col[28],            // 28. Hafiz
           $transport_val,      // 29. Transport
@@ -319,4 +319,5 @@ if (isset($_POST['import_bulk'])) {
     });
   </script>
 </body>
+
 </html>

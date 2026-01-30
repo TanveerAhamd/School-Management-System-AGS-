@@ -166,6 +166,19 @@ $classes = $pdo->query("SELECT * FROM classes")->fetchAll();
 $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
 ?>
 
+<?php
+// ڈیٹا بیس سے اسکول کی تمام سیٹنگز فیچ کریں
+$school_settings = $pdo->query("SELECT * FROM school_settings LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+
+// ویری ایبلز سیٹ کریں (ڈیفالٹ ویلیوز کے ساتھ)
+$sch_name    = !empty($school_settings['school_name']) ? $school_settings['school_name'] : "Amina Girls High School";
+$sch_address = !empty($school_settings['address'])     ? $school_settings['address']     : "Adda Sikandri 21/MPR Gailywal, Lodhran";
+$sch_contact = !empty($school_settings['contact'])     ? $school_settings['contact']     : "0300-1234567";
+$sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $school_settings['logo']))
+  ? 'uploads/' . $school_settings['logo']
+  : 'assets/img/agslogo.png';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -288,8 +301,14 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
           <div class="row bg-title">
             <div class="col-12">
               <div class="card mb-3">
-                <div class="card-body py-2 b-0">
-                  <h5 class="page-title mb-0"><i class="fas fa-user-edit"></i> Edit Student Profile <span id="sync_msg" class="sync-msg">Refreshing Fields...</span></h5>
+                <div class="card-body py-2 b-0 d-flex justify-content-between align-items-center">
+                  <h5 class="page-title mb-0">Edit Student Record</h5>
+                  <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0 bg-transparent p-0">
+                      <li class="breadcrumb-item"><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Home</a></li>
+                      <li class="breadcrumb-item active">Edit</li>
+                    </ol>
+                  </nav>
                 </div>
               </div>
             </div>
@@ -305,17 +324,35 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                   <div class="col-12 col-lg-10 text-center">
                     <div class="row">
                       <div class="col-md-3 text-left">
-                        <img src="./assets/img/agslogo.png" class="logo-img">
-                        <div class="mt-3">
+                        <!-- 1. Dynamic Logo -->
+                        <picture class="d-flex justify-content-center">
+                          <source media="(min-width: 576px)" srcset="<?= $sch_logo ?>">
+                          <img src="<?= $sch_logo ?>" alt="School Logo" class="logo-img d-block" style="max-height: 90px; width: auto; object-fit: contain;">
+                        </picture>
+                        <div class="mt-3 text-center">
                           <label class="fw-bold small">Reg #: <span class="text-danger">*</span></label>
                           <input type="text" name="reg_no" id="reg_no" class="form-control form-control-sm text-center fw-bold" required>
                           <input type="date" name="admission_date" id="admission_date" class="form-control form-control-sm text-center mt-2">
                         </div>
                       </div>
                       <div class="col-md-9 text-center">
-                        <h2>Amina Girls Degree College</h2>
-                        <h6 class="bg-primary px-4 py-1 d-inline-block text-white rounded fw-bold mt-2">EDIT STUDENT RECORD</h6>
+                        <!-- 2. Dynamic Title (Responsive) -->
+                        <h5 class="d-md-none text-center text-nowrap my-2 font-weight-bold"><?= htmlspecialchars($sch_name) ?></h5>
+                        <h2 class="d-none d-md-block text-center text-nowrap m-0 font-weight-bold" style="letter-spacing: 2px;">
+                          <?= htmlspecialchars($sch_name) ?>
+                        </h2>
+                        <div class="text-center">
+                          <span class="text-center text-muted  py-3">
+                            <i class="fas fa-map-marker-alt text-danger"></i> <?= htmlspecialchars($sch_address) ?>
+                          </span>
+                          <br>
+                          <h6
+                            class=" mt-2 rounded bg-primary px-3 py-2 my-2 d-inline-block text-white text-center mb-0 font-weight-bold">
+                            Edit Student Record </h6>
+                        </div>
                         <div class="d-flex gap-2 justify-content-center mt-3 flex-wrap">
+
+
                           <div><label class="small fw-bold">Session <span class="text-danger">*</span></label><select name="session_id" id="session_select" class="form-select form-select-sm" style="width:110px" required></select></div>
                           <div><label class="small fw-bold">Class <span class="text-danger">*</span></label>
                             <select name="class_id" id="sel_class" class="form-select form-select-sm" style="width:110px" required>
