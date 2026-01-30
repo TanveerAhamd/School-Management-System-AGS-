@@ -90,7 +90,6 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/custom.css">
-  <link rel='shortcut icon' type='image/x-icon' href='assets/img/favicon.ico' />
   <style>
     #student_list_card .st-img-circle { width: 35px; height: 35px; object-fit: cover; border-radius: 50%; border: 1px solid #ddd; }
     .badge-status { font-size: 9px; text-transform: uppercase; font-weight: 700; padding: 4px 8px; }

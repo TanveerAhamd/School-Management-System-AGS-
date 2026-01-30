@@ -67,7 +67,6 @@ $discount_list = $pdo->query("SELECT * FROM discount_types ORDER BY id DESC")->f
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/custom.css">
-  <link rel='shortcut icon' type='image/x-icon' href='assets/img/favicon.ico' />
 </head>
 
 <body>

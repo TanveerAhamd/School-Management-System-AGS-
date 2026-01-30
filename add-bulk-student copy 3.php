@@ -7,7 +7,7 @@ if (isset($_GET['action'])) {
   ob_clean();
   header('Content-Type: application/json');
   if ($_GET['action'] == 'get_all_sessions') {
-    $stmt = $pdo->query("SELECT id, session_name, is_active FROM academic_sessions ORDER BY id DESC");
+    $stmt = $pdo->query("SELECT id, session_name, is_active FROM academic_sessions");
     echo json_encode(['data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
   } elseif ($_GET['action'] == 'fetch_sections') {
     $stmt = $pdo->prepare("SELECT id, section_name FROM sections WHERE class_id = ?");
@@ -24,94 +24,64 @@ $success = false;
 $error = "";
 $count = 0;
 
-// --- 2. IMPORT LOGIC (SMART PARSER) ---
+// --- 2. IMPORT LOGIC (Strictly CSV Columns) ---
 if (isset($_POST['import_bulk'])) {
   try {
     if ($_FILES['student_file']['size'] > 0) {
       $handle = fopen($_FILES['student_file']['tmp_name'], "r");
-      
+      fgetcsv($handle); // Header Skip
+
       $pdo->beginTransaction();
-      
-      // SQL with ALL 33 Fields
       $sql = "INSERT INTO students (
-                reg_no, admission_date, session, class_id, section_id, 
-                medium, subject_group_id, student_name, cnic_bform, dob, 
-                gender, mother_language, caste, tehsil, district, 
-                student_contact, student_address, guardian_name, relation, occupation, 
-                guardian_cnic, guardian_contact, guardian_address, prev_school_name, last_class, 
-                passing_year, board_name, disability, hafiz_quran, transport, 
-                route_id, interests, remarks, 
+                id, reg_no, admission_date, session, class_id, section_id, subject_group_id, 
+                student_name, cnic_bform, dob, gender, mother_language, caste, contact_no, 
+                address, guardian_name, relation, occupation, guardian_contact, 
+                prev_school_name, last_class, passing_year, board_name, disability, 
+                hafiz_quran, transport, route_id, interests, remarks, student_photo, 
+                cnic_doc, guardian_cnic_front, guardian_cnic_back, result_card_doc, 
                 created_at, is_deleted, is_promoted, is_detained, is_dropout, is_passout, is_certified
-            ) VALUES (
-                ?, ?, ?, ?, ?, 
-                ?, ?, ?, ?, ?, 
-                ?, ?, ?, ?, ?, 
-                ?, ?, ?, ?, ?, 
-                ?, ?, ?, ?, ?, 
-                ?, ?, ?, ?, ?, 
-                ?, ?, ?, 
-                NOW(), 0, 0, 0, 0, 0, 0
-            )";
+            ) VALUES (NULL, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, NOW(), 0,0,0,0,0,0)";
 
       $stmt = $pdo->prepare($sql);
-      
-      $headerFound = false; // Flag for finding the real data start
-
       while (($col = fgetcsv($handle, 10000, ",")) !== FALSE) {
-        
-        // Step A: Look for the real Header Row "Reg No"
-        if (trim($col[0]) == 'Reg No') {
-            $headerFound = true;
-            continue; // Skip the header itself
-        }
-
-        // Step B: Ignore metadata rows (starting with #) or if header not found yet
-        if (!$headerFound || empty($col[0]) || strpos($col[0], '#') === 0) {
-            continue;
-        }
-
-        // Step C: Process Actual Data
+        if (empty($col[6])) continue;
+        $dob = (!empty($col[8])) ? date('Y-m-d', strtotime($col[8])) : NULL;
         $adm_date = (!empty($col[1])) ? date('Y-m-d', strtotime($col[1])) : date('Y-m-d');
-        $dob      = (!empty($col[9])) ? date('Y-m-d', strtotime($col[9])) : NULL;
-        
-        // Logic: Transport Route ID
-        $transport_val = trim($col[29]); 
-        $route_id      = (strtolower($transport_val) == 'yes' && !empty($col[30])) ? $col[30] : NULL;
 
         $stmt->execute([
-          strtoupper($col[0]), // 0. Reg No
-          $adm_date,           // 1. Adm Date
-          $col[2],             // 2. Session
-          $col[3],             // 3. Class
-          $col[4],             // 4. Section
-          strtoupper($col[5]), // 5. Medium
-          $col[6],             // 6. Group
-          strtoupper($col[7]), // 7. Name
-          $col[8],             // 8. CNIC
-          $dob,                // 9. DOB
-          strtoupper($col[10]),// 10. Gender
-          strtoupper($col[11]),// 11. Lang
-          strtoupper($col[12]),// 12. Caste
-          strtoupper($col[13]),// 13. Tehsil
-          strtoupper($col[14]),// 14. District
-          $col[15],            // 15. Contact
-          strtoupper($col[16]),// 16. Address
-          strtoupper($col[17]),// 17. G Name
-          $col[18],            // 18. Relation
-          strtoupper($col[19]),// 19. Occupation
-          $col[20],            // 20. G CNIC
-          $col[21],            // 21. G Contact
-          strtoupper($col[22]),// 22. G Address
-          strtoupper($col[23]),// 23. Prev School
-          $col[24],            // 24. Last Class
-          $col[25],            // 25. Passing Year
-          strtoupper($col[26]),// 26. Board
-          $col[27],            // 27. Disability
-          $col[28],            // 28. Hafiz
-          $transport_val,      // 29. Transport
-          $route_id,           // 30. Route ID
-          $col[31],            // 31. Interests
-          $col[32]             // 32. Remarks
+          $col[0],
+          $adm_date,
+          $col[2],
+          $col[3],
+          $col[4],
+          $col[5],
+          strtoupper($col[6]),
+          $col[7],
+          $dob,
+          $col[9],
+          $col[10],
+          $col[11],
+          $col[12],
+          $col[13],
+          $col[14],
+          $col[15],
+          $col[16],
+          $col[17],
+          $col[18],
+          $col[19],
+          $col[20],
+          $col[21],
+          $col[22],
+          $col[23],
+          $col[24],
+          $col[25],
+          trim($col[26]),
+          $col[27],
+          $col[28],
+          $col[29],
+          $col[30],
+          $col[31],
+          $col[32]
         ]);
         $count++;
       }
@@ -120,7 +90,7 @@ if (isset($_POST['import_bulk'])) {
     }
   } catch (Exception $e) {
     if ($pdo->inTransaction()) $pdo->rollBack();
-    $error = "Import Error: " . $e->getMessage();
+    $error = $e->getMessage();
   }
 }
 ?>
@@ -234,7 +204,7 @@ if (isset($_POST['import_bulk'])) {
                           <input type="file" name="student_file" class="custom-file-input" id="customFile" accept=".csv" required>
                           <label class="custom-file-label">Select file</label>
                         </div>
-                        <small class="text-muted mt-2 d-block">System will ignore Reference Data and find "Reg No" automatically.</small>
+                        <small class="text-muted mt-2 d-block">System will use IDs from CSV for final registration.</small>
                       </div>
 
                       <div class="card-footer bg-whitesmoke text-right rounded">
@@ -319,4 +289,5 @@ if (isset($_POST['import_bulk'])) {
     });
   </script>
 </body>
+
 </html>

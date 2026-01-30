@@ -17,7 +17,7 @@ function create_audit_log($pdo, $admin_id, $action_type, $details = "")
 }
 
 // --- SESSION TIMEOUT LOGIC (5 Minutes) ---
-$timeout_duration = 300; // 5 minutes = 300 seconds
+$timeout_duration = 3000; // 5 minutes = 300 seconds
 
 if (isset($_SESSION['last_activity'])) {
     $elapsed_time = time() - $_SESSION['last_activity'];

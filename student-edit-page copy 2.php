@@ -1,18 +1,14 @@
 <?php
 
 /**
- * FINAL CORRECTED FILE
- * Features: 
- * 1. PRG Pattern (Fixes SweetAlert on Refresh)
- * 2. Pre-filled Data (via AJAX)
- * 3. Strict Image Handling
+ * 1. DATABASE CONNECTION & AJAX HANDLERS
  */
 require_once 'auth.php';
 
-// --- 1. AJAX HANDLERS ---
 if (isset($_GET['action'])) {
   header('Content-Type: application/json');
 
+  // Fetch Student Full Data for UI Sync
   if ($_GET['action'] == 'fetch_student_full' && isset($_GET['id'])) {
     $stmt = $pdo->prepare("SELECT * FROM students WHERE id = ?");
     $stmt->execute([$_GET['id']]);
@@ -20,6 +16,7 @@ if (isset($_GET['action'])) {
     exit;
   }
 
+  // Dynamic Data Handlers
   if ($_GET['action'] == 'fetch_sections') {
     $stmt = $pdo->prepare("SELECT id, section_name FROM sections WHERE class_id = ?");
     $stmt->execute([$_GET['class_id'] ?? 0]);
@@ -48,7 +45,11 @@ if (isset($_GET['action'])) {
   }
 }
 
-// --- 2. UPDATE LOGIC ---
+/**
+ * 2. UPDATE LOGIC (Strict File Replacement & All-CAPS Naming)
+ */
+$error = "";
+$success = false;
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_student'])) {
   try {
     $id = $_POST['student_db_id'];
@@ -56,25 +57,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_student'])) {
     $name_clean = strtoupper(str_replace(' ', '_', $_POST['student_name']));
     $folder = 'uploads/';
 
-    // Function handles replacement: Deletes old file ONLY if new one is uploaded
+    // --- ENHANCED MEDIA REPLACEMENT FUNCTION ---
     function handleMediaUpdate($fileKey, $camKey, $docType, $reg, $name, $folder, $id, $pdo)
     {
+      // Get current path from DB
       $stmt = $pdo->prepare("SELECT $fileKey FROM students WHERE id = ?");
       $stmt->execute([$id]);
       $oldPath = $stmt->fetchColumn();
 
-      $date_time = date('Ymd_His');
+      $date_time = date('Ymd_His'); // Use seconds to prevent cache
       $docType = strtoupper($docType);
       $newPath = null;
 
-      // 1. Check Webcam Data
+      // 1. Camera Capture Check
       if (!empty($_POST[$camKey]) && strpos($_POST[$camKey], 'base64') !== false) {
         $data = explode(',', $_POST[$camKey])[1];
         $fName = "{$docType}_{$reg}_{$name}_{$date_time}.png";
         file_put_contents($folder . $fName, base64_decode($data));
         $newPath = $folder . $fName;
       }
-      // 2. Check File Upload
+      // 2. Manual File Upload Check
       elseif (!empty($_FILES[$fileKey]['name'])) {
         $ext = strtolower(pathinfo($_FILES[$fileKey]['name'], PATHINFO_EXTENSION));
         $fName = strtoupper("{$docType}_{$reg}_{$name}_{$date_time}.{$ext}");
@@ -83,14 +85,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_student'])) {
         }
       }
 
-      // 3. Logic: If new file exists, delete old one. Else return old path.
+      // 3. IF NEW FILE CREATED, DELETE OLD FILE
       if ($newPath) {
         if ($oldPath && file_exists($oldPath) && !strpos($oldPath, 'userdummypic') && !strpos($oldPath, 'elementor')) {
-          unlink($oldPath); // Purani file delete
+          unlink($oldPath); // Delete old file from server
         }
         return $newPath;
       }
-      return $oldPath; // Purani file wapis
+      return $oldPath; // Keep existing path
     }
 
     $photo = handleMediaUpdate('student_photo', 'cam_photo_data', 'PHOTO', $reg_clean, $name_clean, $folder, $id, $pdo);
@@ -98,7 +100,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_student'])) {
     $gf = handleMediaUpdate('guardian_cnic_front', 'cam_gf_data', 'GFRONT', $reg_clean, $name_clean, $folder, $id, $pdo);
     $gb = handleMediaUpdate('guardian_cnic_back', 'cam_gb_data', 'GBACK', $reg_clean, $name_clean, $folder, $id, $pdo);
     $rc = handleMediaUpdate('result_card_doc', 'cam_rc_data', 'RESULTCARD', $reg_clean, $name_clean, $folder, $id, $pdo);
-
     $sql = "UPDATE students SET 
     reg_no=?, admission_date=?, session=?, class_id=?, section_id=?, 
     medium=?, subject_group_id=?, student_name=?, cnic_bform=?, dob=?, 
@@ -111,53 +112,48 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_student'])) {
     WHERE id=?";
 
     $pdo->prepare($sql)->execute([
-      $_POST['reg_no'],
-      $_POST['admission_date'],
-      $_POST['session_id'],
-      $_POST['class_id'],
-      $_POST['section_id'],
-      $_POST['medium'],
-      $_POST['subject_group_id'],
-      strtoupper($_POST['student_name']),
-      $_POST['cnic_bform'],
-      $_POST['dob'],
-      $_POST['gender'],
-      $_POST['mother_language'],
-      $_POST['caste'],
-      $_POST['tehsil'],
-      $_POST['district'],
-      $_POST['student_contact'],
-      $_POST['student_address'],
-      $_POST['guardian_name'],
-      $_POST['relation'],
-      $_POST['occupation'],
-      $_POST['guardian_address'],
-      $_POST['guardian_contact'],
-      $_POST['guardian_cnic'],
-      $_POST['prev_school_name'] ?? '',
-      $_POST['last_class'] ?? '',
-      $_POST['passing_year'] ?? '',
-      $_POST['board_name'] ?? '',
-      $_POST['disability'] ?? 'No',
-      $_POST['hafiz_quran'] ?? 'No',
-      $_POST['transport'],
-      ($_POST['transport'] == 'Yes' ? $_POST['route_id'] : null),
-      (isset($_POST['interests']) ? implode(',', $_POST['interests']) : ''),
-      $_POST['remarks'] ?? '',
-      $photo,
-      $cnic,
-      $gf,
-      $gb,
-      $rc,
-      $id
+      $_POST['reg_no'],               // 1
+      $_POST['admission_date'],        // 2
+      $_POST['session_id'],            // 3
+      $_POST['class_id'],              // 4
+      $_POST['section_id'],            // 5
+      $_POST['medium'],                // 6 (Added Medium)
+      $_POST['subject_group_id'],       // 7
+      strtoupper($_POST['student_name']), // 8
+      $_POST['cnic_bform'],            // 9
+      $_POST['dob'],                   // 10
+      $_POST['gender'],                // 11
+      $_POST['mother_language'],       // 12
+      $_POST['caste'],                 // 13
+      $_POST['tehsil'],                // 14
+      $_POST['district'],              // 15
+      $_POST['student_contact'],       // 16
+      $_POST['student_address'],       // 17
+      $_POST['guardian_name'],         // 18
+      $_POST['relation'],              // 19
+      $_POST['occupation'],            // 20
+      $_POST['guardian_address'],       // 21
+      $_POST['guardian_contact'],       // 22
+      $_POST['guardian_cnic'],         // 23
+      $_POST['prev_school_name'] ?? '', // 24
+      $_POST['last_class'] ?? '',       // 25
+      $_POST['passing_year'] ?? '',     // 26
+      $_POST['board_name'] ?? '',       // 27
+      $_POST['disability'] ?? 'No',     // 28
+      $_POST['hafiz_quran'] ?? 'No',    // 29
+      $_POST['transport'],             // 30
+      ($_POST['transport'] == 'Yes' ? $_POST['route_id'] : null), // 31
+      (isset($_POST['interests']) ? implode(',', $_POST['interests']) : ''), // 32
+      $_POST['remarks'] ?? '',         // 33
+      $photo,                          // 34 (Nayi ya Purani Image)
+      $cnic,                           // 35
+      $gf,                             // 36
+      $gb,                             // 37
+      $rc,                             // 38
+      $id                              // 39 (WHERE Clause)
     ]);
-
-    // --- FIX FOR SWEET ALERT LOOP ---
-    // Redirect to the same page with a success flag in URL
-    header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . $id . "&status=success");
-    exit;
+    $success = true;
   } catch (Exception $e) {
-    // Error stays on page to show message
     $error = $e->getMessage();
   }
 }
@@ -232,6 +228,7 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
       justify-content: center;
     }
 
+    /* SCOPED PREVIEW CLASSES (Protects Sidebar Icons) */
     .edit-cam-img {
       height: 100%;
       width: 100%;
@@ -275,6 +272,7 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
 </head>
 
 <body>
+  <!-- ORIGINAL RELOADER -->
   <div class="loader"></div>
 
   <div id="app">
@@ -327,10 +325,13 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                               <option value="">Section</option>
                             </select></div>
                           <div>
-                            <label class="fw-bold small">Medium <span class="text-danger">*</span></label>
-                            <select name="medium" id="medium" class="form-select form-select-sm" style="width:120px" required>
-                              <option value="ENGLISH">English</option>
-                              <option value="URDU">Urdu</option>
+                            <label class="fw-bold small">
+                              Medium <span class="text-danger">*</span>
+                            </label>
+
+                            <select name="medium" class="form-select form-select-sm" style="width:120px" required>
+                              <option value="ENGLISH" <?= (strtoupper($student['medium'] ?? '') == 'ENGLISH') ? 'selected' : '' ?>>English</option>
+                              <option value="URDU" <?= (strtoupper($student['medium'] ?? '') == 'URDU') ? 'selected' : '' ?>>Urdu</option>
                             </select>
                           </div>
                           <div><label class="small fw-bold">Group <span class="text-danger">*</span></label>
@@ -363,110 +364,39 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                 <!-- STUDENT INFO SECTION -->
                 <h6 class="form-section-title mt-4">Student Details</h6>
                 <div class="row">
-                  <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">Student Name <span class="text-danger">*</span></label>
-                    <input type="text" name="student_name" id="student_name" class="form-control" required style="text-transform: uppercase;">
-                  </div>
-                  <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">CNIC / B-Form <span class="text-danger">*</span></label>
-                    <input type="text" id="cnic_bform" name="cnic_bform" class="form-control" required>
-                  </div>
-                  <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">Date of Birth <span class="text-danger">* </span>mm/dd/yy</label>
-                    <input type="date" name="dob" id="dob" class="form-control" required>
-                  </div>
-
-                  <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">Gender <span class="text-danger">*</span></label>
-                    <select name="gender" id="gender" class="form-control">
-                      <option value="FEMALE">FEMALE</option>
-                      <option value="MALE">MALE</option>
-                    </select>
-                  </div>
-
-                  <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">Language</label>
-                    <input type="text" name="mother_language" id="mother_language" class="form-control" style="text-transform: uppercase;">
-                  </div>
-                  <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">Caste</label>
-                    <input type="text" name="caste" id="caste" class="form-control" style="text-transform: uppercase;">
-                  </div>
-
-                  <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">Tehsil</label>
-                    <select name="tehsil" id="tehsil" class="form-control">
-                      <option value="LODHRAN">LODHRAN</option>
-                      <option value="KEHROR PAKKA">KEHROR PAKKA</option>
-                      <option value="DUNYAPUR">DUNYAPUR</option>
-                    </select>
-                  </div>
-                  <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">District</label>
-                    <select name="district" id="district" class="form-control">
-                      <option value="LODHRAN">LODHRAN</option>
-                    </select>
-                  </div>
-
-                  <div class="col-md-9 mt-2">
-                    <label class="small fw-bold">Student Address</label>
-                    <input type="text" name="student_address" id="student_address" class="form-control" style="text-transform: uppercase;">
-                  </div>
-                  <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">Contact #</label>
-                    <input type="text" id="contact_no" name="student_contact" class="form-control">
-                  </div>
-
+                  <div class="col-md-3 mt-2"><label class="small fw-bold">Student Name <span class="text-danger">*</span></label><input type="text" name="student_name" id="student_name" class="form-control" required></div>
+                  <div class="col-md-3 mt-2"><label class="small fw-bold">CNIC / B-Form <span class="text-danger">*</span></label><input type="text" id="cnic_bform" name="cnic_bform" class="form-control" required></div>
+                  <div class="col-md-3 mt-2"><label class="small fw-bold">Date of Birth: MM/DD/YYYY<span class="text-danger">*</span></label><input type="date" name="dob" id="dob" class="form-control" required></div>
+                  <div class="col-md-3 mt-2"><label class="small fw-bold">Gender</label><select name="gender" id="gender" class="form-control">
+                      <option value="Female">Female</option>
+                      <option value="Male">Male</option>
+                    </select></div>
+                  <div class="col-md-2 mt-2"><label class="small fw-bold">Language</label><input type="text" name="mother_language" id="mother_language" class="form-control"></div>
+                  <div class="col-md-2 mt-2"><label class="small fw-bold">Caste</label><input type="text" name="caste" id="caste" class="form-control"></div>
+                  <div class="col-md-3 mt-2"><label class="small fw-bold">Contact #</label><input type="text" id="contact_no" name="contact_no" class="form-control"></div>
+                  <div class="col-md-5 mt-2"><label class="small fw-bold">Address</label><input type="text" name="address" id="address" class="form-control"></div>
                 </div>
 
                 <!-- GUARDIAN INFO -->
                 <h6 class="form-section-title mt-4">Guardian Information</h6>
                 <div class="row">
-                  <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">Guardian Name <span class="text-danger">*</span></label>
-                    <input type="text" name="guardian_name" id="guardian_name" class="form-control" required style="text-transform: uppercase;">
-                  </div>
-                  <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">Relation *</label>
-                    <select name="relation" id="relation" class="form-control">
+                  <div class="col-md-3 mt-2"><label class="small fw-bold">Guardian Name <span class="text-danger">*</span></label><input type="text" name="guardian_name" id="guardian_name" class="form-control" required></div>
+                  <div class="col-md-3 mt-2"><label class="small fw-bold">Relation *</label><select name="relation" id="relation" class="form-control">
                       <option value="Father">Father</option>
                       <option value="Mother">Mother</option>
                       <option value="Uncle">Uncle</option>
-                      <option value="Brother">Brother</option>
-                    </select>
-                  </div>
-                  <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">Guardian CNIC <span class="text-danger">*</span></label>
-                    <input type="text" id="guardian_cnic" name="guardian_cnic" class="form-control" required>
-                  </div>
-
-                  <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">Guardian Contact *</label>
-                    <input type="text" id="guardian_contact" name="guardian_contact" class="form-control" required>
-                  </div>
-                  <div class="col-md-4 mt-2">
-                    <label class="small fw-bold">Occupation</label>
-                    <input type="text" name="occupation" id="occupation" class="form-control" style="text-transform: uppercase;">
-                  </div>
-                  <div class="col-md-8 mt-2">
-                    <div class="d-flex justify-content-between align-items-center">
-                      <label class="small fw-bold mb-0">Guardian Address</label>
-                      <div class="ms-3 form-check d-flex align-item-center">
-                        <input class="form-check-input" type="checkbox" id="same_address">
-                        <label class="form-check-label small" for="same_address">Same as student address</label>
-                      </div>
-                    </div>
-                    <input type="text" id="guardian_address" name="guardian_address" class="form-control mt-1" style="text-transform: uppercase;">
-                  </div>
+                    </select></div>
+                  <div class="col-md-3 mt-2"><label class="small fw-bold">Guardian Contact *</label><input type="text" id="guardian_contact" name="guardian_contact" class="form-control" required></div>
+                  <div class="col-md-3 mt-2"><label class="small fw-bold">Occupation</label><input type="text" name="occupation" id="occupation" class="form-control"></div>
                 </div>
 
                 <!-- PREVIOUS SCHOOL -->
                 <h6 class="form-section-title mt-4">Previous School Record</h6>
                 <div class="row rounded p-2" style="background: #fdfdfd; border:1px solid #ebedf2;">
-                  <div class="col-md-5 mt-2"><label class="small fw-bold">School Name</label><input type="text" name="prev_school_name" id="prev_school_name" class="form-control" style="text-transform: uppercase;"></div>
-                  <div class="col-md-2 mt-2"><label class="small fw-bold">Last Class</label><input type="text" name="last_class" id="last_class" class="form-control" style="text-transform: uppercase;"></div>
+                  <div class="col-md-5 mt-2"><label class="small fw-bold">School Name</label><input type="text" name="prev_school_name" id="prev_school_name" class="form-control"></div>
+                  <div class="col-md-2 mt-2"><label class="small fw-bold">Last Class</label><input type="text" name="last_class" id="last_class" class="form-control"></div>
                   <div class="col-md-2 mt-2"><label class="small fw-bold">Passing Year</label><input type="text" name="passing_year" id="passing_year" class="form-control"></div>
-                  <div class="col-md-3 mt-2"><label class="small fw-bold">Board Name</label><input type="text" name="board_name" id="board_name" class="form-control" style="text-transform: uppercase;"></div>
+                  <div class="col-md-3 mt-2"><label class="small fw-bold">Board Name</label><input type="text" name="board_name" id="board_name" class="form-control"></div>
                 </div>
 
                 <!-- DOCUMENTS SECTION -->
@@ -554,11 +484,13 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
 
   <canvas id="hidden_canvas" style="display:none;"></canvas>
 
+  <!-- SCRIPTS -->
   <script src="assets/js/app.min.js"></script>
   <script src="assets/js/jquery.inputmask.min.js"></script>
   <script src="./assets/js/sweetalert2.js"></script>
 
   <script>
+    // FIX PRELOADER: Force fade out on window load
     $(window).on('load', function() {
       $('.loader').fadeOut('slow');
     });
@@ -566,60 +498,41 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
     let activeStream = null;
 
     /**
-     * MAIN DATA SYNC
+     * MAIN DATA SYNC: Fetch JSON and pre-fill everything
      */
     function initEditPage() {
       $('#sync_msg').show();
       $.getJSON('?action=fetch_student_full&id=' + "<?= $_GET['id'] ?>", function(s) {
 
-        // 1. Basic Inputs
+        // 1. Inputs & Masks
         $('#reg_no').val(s.reg_no);
         $('#admission_date').val(s.admission_date);
         $('#student_name').val(s.student_name);
         $('#cnic_bform').val(s.cnic_bform);
         $('#dob').val(s.dob);
-
-        // Gender Fix
-        let g = s.gender ? s.gender.toUpperCase() : '';
-        $('#gender').val(g);
-
-        $('#medium').val(s.medium ? s.medium : 'ENGLISH');
+        $('#gender').val(s.gender);
         $('#mother_language').val(s.mother_language);
         $('#caste').val(s.caste);
-        $('#tehsil').val(s.tehsil);
-        $('#district').val(s.district);
-        $('#contact_no').val(s.student_contact);
-        $('#student_address').val(s.student_address);
-
-        // 2. Guardian
+        $('#contact_no').val(s.contact_no);
+        $('#address').val(s.address);
         $('#guardian_name').val(s.guardian_name);
         $('#relation').val(s.relation);
-        $('#guardian_cnic').val(s.guardian_cnic);
         $('#guardian_contact').val(s.guardian_contact);
         $('#occupation').val(s.occupation);
-        $('#guardian_address').val(s.guardian_address);
-
-        // Checkbox Logic
-        if (s.student_address == s.guardian_address && s.student_address != "") {
-          $('#same_address').prop('checked', true);
-          $('#guardian_address').prop('readonly', true);
-        }
-
-        // 3. School
         $('#prev_school_name').val(s.prev_school_name);
         $('#last_class').val(s.last_class);
         $('#passing_year').val(s.passing_year);
         $('#board_name').val(s.board_name);
         $('#remarks').val(s.remarks);
 
-        // 4. Images
+        // 2. Images
         if (s.student_photo) $('#photoPreview').attr('src', s.student_photo);
         if (s.cnic_doc) $('#prev_cnic').attr('src', s.cnic_doc);
         if (s.guardian_cnic_front) $('#prev_gf').attr('src', s.guardian_cnic_front);
         if (s.guardian_cnic_back) $('#prev_gb').attr('src', s.guardian_cnic_back);
         if (s.result_card_doc) $('#prev_rc').attr('src', s.result_card_doc);
 
-        // 5. Radios
+        // 3. Radio Buttons & Checkboxes
         $(`input[name="transport"][value="${s.transport}"]`).prop('checked', true).trigger('change');
         $(`input[name="hafiz_quran"][value="${s.hafiz_quran}"]`).prop('checked', true);
         $(`input[name="disability"][value="${s.disability}"]`).prop('checked', true);
@@ -627,7 +540,7 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
           s.interests.split(',').forEach(i => $(`input[name="interests[]"][value="${i}"]`).prop('checked', true));
         }
 
-        // 6. Dropdowns
+        // 4. AJAX Linked Dropdowns (Sessions, Sections, Routes)
         loadSessions(s.session);
         $('#sel_class').val(s.class_id);
         loadSections(s.class_id, s.section_id);
@@ -643,6 +556,7 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
       });
     }
 
+    // Callbacks for dynamic data pre-selection
     function loadSessions(targetID) {
       $.getJSON('?action=get_all_sessions', function(res) {
         let h = '<option value="">Select Session</option>';
@@ -668,7 +582,9 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
       });
     }
 
-    // --- CAM FUNCTIONS ---
+    /**
+     * STRICT SCOPED CAMERA (Protects Navbar/Sidebar)
+     */
     async function startCam(id) {
       if (activeStream) stopActiveStream();
       const form = $('#registrationForm');
@@ -744,7 +660,8 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
     }
 
     $(document).ready(function() {
-      $('#cnic_bform, #guardian_cnic').inputmask("99999-9999999-9");
+      // Input Masks
+      $('#cnic_bform').inputmask("99999-9999999-9");
       $('#contact_no, #guardian_contact').inputmask("0399-9999999");
 
       $('#sel_class').change(function() {
@@ -771,41 +688,19 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
         }
       });
 
-      $('#same_address').change(function() {
-        if ($(this).is(':checked')) {
-          $('#guardian_address').val($('#student_address').val()).prop('readonly', true);
-        } else {
-          $('#guardian_address').prop('readonly', false);
-        }
-      });
-      $('#student_address').keyup(function() {
-        if ($('#same_address').is(':checked')) {
-          $('#guardian_address').val($(this).val());
-        }
-      });
-
-      // SYNC DATA
+      // FIRE SYNC
       initEditPage();
 
-      // --- SWEETALERT ONLY ON URL PARAMETER ---
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('status') === 'success') {
-        Swal.fire({
-          title: 'Updated!',
-          text: 'Student record saved successfully.',
-          icon: 'success'
-        }).then(() => {
-          // Optional: Remove 'status=success' from URL without reloading
-          const newUrl = window.location.pathname + '?id=' + "<?= $_GET['id'] ?>";
-          window.history.replaceState(null, null, newUrl);
+      <?php if ($success): ?>
+        Swal.fire('Updated!', 'Student record saved successfully.', 'success').then(() => {
+          window.location.href = 'student-list.php?status=updated';
         });
-      }
-
-      <?php if (isset($error) && $error): ?>
+      <?php elseif ($error): ?>
         Swal.fire('Error!', '<?= addslashes($error) ?>', 'error');
       <?php endif; ?>
     });
   </script>
+  <!-- OTRIKA THEME SCRIPTS -->
   <script src="assets/js/scripts.js"></script>
   <script src="assets/js/custom.js"></script>
 </body>

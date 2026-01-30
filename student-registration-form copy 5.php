@@ -116,70 +116,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_student'])) {
     if (empty($photo) && empty($_POST['cam_photo_data'])) throw new Exception("Student Portrait Photo is required!");
 
     $sql = "INSERT INTO students (
-    reg_no, admission_date, session, class_id, section_id, 
-    medium, subject_group_id, student_name, cnic_bform, dob, 
-    gender, mother_language, caste, tehsil, district, 
-    student_contact, student_address, guardian_name, relation, occupation, 
-    guardian_address, guardian_contact, guardian_cnic, prev_school_name, last_class, 
-    passing_year, board_name, disability, hafiz_quran, transport, 
-    route_id, interests, remarks, student_photo, cnic_doc, 
-    guardian_cnic_front, guardian_cnic_back, result_card_doc, created_at
-) VALUES (
-    ?, ?, ?, ?, ?, 
-    ?, ?, ?, ?, ?, 
-    ?, ?, ?, ?, ?, 
-    ?, ?, ?, ?, ?, 
-    ?, ?, ?, ?, ?, 
-    ?, ?, ?, ?, ?, 
-    ?, ?, ?, ?, ?, 
-    ?, ?, ?, NOW()
-);";
+            reg_no, admission_date, session, class_id, section_id, subject_group_id, 
+            student_name, cnic_bform, dob, gender, mother_language, caste, tehsil, district, student_address,
+            contact_no, address, guardian_name, relation, guardian_cnic, occupation, guardian_address, guardian_contact, 
+            prev_school_name, last_class, passing_year, board_name, disability, 
+            hafiz_quran, transport, route_id, interests, remarks, 
+            student_photo, cnic_doc, guardian_cnic_front, guardian_cnic_back, result_card_doc, created_at
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, NOW())";
 
     $stmt = $pdo->prepare($sql);
-
     $stmt->execute([
-      $_POST['reg_no'],            // 1
-      $_POST['admission_date'],     // 2
-      $_POST['session_id'],         // 3
-      $_POST['class_id'],           // 4
-      $_POST['section_id'],         // 5
-      $_POST['medium'],             // 6 <--- MEDIUM KI VALUE YAHAN JAYEGI
-      $_POST['subject_group_id'],    // 7
-      strtoupper($_POST['student_name']), // 8
-      $_POST['cnic_bform'],         // 9
-      $_POST['dob'],                // 10
-      $_POST['gender'],             // 11
-      $_POST['mother_language'],    // 12
-      $_POST['caste'],              // 13
-      $_POST['tehsil'],             // 14
-      $_POST['district'],           // 15
-      $_POST['student_contact'],    // 16
-      $_POST['student_address'],    // 17
-      $_POST['guardian_name'],      // 18
-      $_POST['relation'],           // 19
-      $_POST['occupation'],         // 20
-      $_POST['guardian_address'],    // 21
-      $_POST['guardian_contact'],    // 22
-      $_POST['guardian_cnic'],      // 23
-      $_POST['prev_school_name'],    // 24
-      $_POST['last_class'],          // 25
-      $_POST['passing_year'],        // 26
-      $_POST['board_name'],          // 27
-      $_POST['disability'] ?? 'No',  // 28
-      $_POST['hafiz_quran'] ?? 'No', // 29
-      $_POST['transport'],           // 30
-      ($_POST['transport'] == 'Yes' ? $_POST['route_id'] : null), // 31
-      isset($_POST['interests']) ? implode(',', $_POST['interests']) : '', // 32
-      $_POST['remarks'],             // 33
-      $photo,                        // 34 (Base64 or Path)
-      $cnic_img,                     // 35
-      $gf,                           // 36 (Guardian Front)
-      $gb,                           // 37 (Guardian Back)
-      $rc                            // 38 (Result Card)
+      $_POST['reg_no'],
+      $_POST['admission_date'],
+      $_POST['session_id'],
+      $_POST['class_id'],
+      $_POST['section_id'],
+      $_POST['subject_group_id'],
+      $_POST['student_name'],
+      $_POST['cnic_bform'],
+      $_POST['dob'],
+      $_POST['gender'],
+      $_POST['mother_language'],
+      $_POST['caste'],
+      $_POST['tehsil'],
+      $_POST['district'],
+      $_POST['student_address'],
+      $_POST['contact_no'],
+      $_POST['address'],
+      $_POST['guardian_name'],
+      $_POST['relation'],
+      $_POST['guardian_cnic'],
+      $_POST['occupation'],
+      $_POST['guardian_address'],
+      $_POST['guardian_contact'],
+      $_POST['prev_school_name'] ?? '',
+      $_POST['last_class'] ?? '',
+      $_POST['passing_year'] ?? '',
+      $_POST['board_name'] ?? '',
+      $_POST['disability'] ?? 'No',
+      $_POST['hafiz_quran'] ?? 'No',
+      $_POST['transport'],
+      ($_POST['transport'] == 'Yes' ? $_POST['route_id'] : null),
+      isset($_POST['interests']) ? implode(',', $_POST['interests']) : '',
+      $_POST['remarks'] ?? '',
+      $photo,
+      $cnic_img,
+      $gf,
+      $gb,
+      $rc
     ]);
-
-
-
     $success = true;
   } catch (Exception $e) {
     $error = $e->getMessage();
@@ -380,23 +365,24 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                               <?php endforeach; ?>
                             </select>
                           </div>
-                          <div><label class="fw-bold small">Section <span class="text-danger">*</span></label><select name="section_id" id="sel_section" class="form-select form-select-sm" style="width:100px" required>
-                              <option value="">Section</option>
-                            </select></div>
                           <div>
                             <label class="fw-bold small">
                               Medium <span class="text-danger">*</span>
                             </label>
 
-                            <select name="medium" class="form-select form-select-sm" style="width:120px" required>
-                              <option value="ENGLISH">
+                            <select name="medium" id="sel_medium" class="form-select form-select-sm" style="width:120px" required>
+                              <option value="english" <?= (($_POST['medium'] ?? 'english') == 'english') ? 'selected' : '' ?>>
                                 English
                               </option>
-                              <option value="URDU">
+                              <option value="urdu" <?= (($_POST['medium'] ?? '') == 'urdu') ? 'selected' : '' ?>>
                                 Urdu
                               </option>
                             </select>
                           </div>
+
+                          <div><label class="fw-bold small">Section <span class="text-danger">*</span></label><select name="section_id" id="sel_section" class="form-select form-select-sm" style="width:100px" required>
+                              <option value="">Section</option>
+                            </select></div>
                           <div><label class="fw-bold small">Group <span class="text-danger">*</span></label>
                             <select name="subject_group_id" id="sel_group" class="form-select form-select-sm" style="width:100px" required>
                               <option value="">Select</option>
@@ -482,7 +468,7 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                   <div class="col-md-3 mt-2">
                     <label class="small fw-bold">Tehsil </label>
                     <select name="tehsil" class="form-control">
-                      <?php $tehsils = ['LODHRAN', 'KEHROR PAKKA', 'DUNYAPUR'];
+                      <?php $tehsils = ['Lodhran', 'Kahror Pakka', 'Dunyapur'];
                       foreach ($tehsils as $t) echo "<option value='$t' " . (($_POST['tehsil'] ?? '') == $t ? 'selected' : '') . ">$t</option>"; ?>
                     </select>
                   </div>
@@ -490,7 +476,7 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                   <div class="col-md-3 mt-2">
                     <label class="small fw-bold">District </label>
                     <select name="district" class="form-control">
-                      <?php $districts = ['LODHRAN'];
+                      <?php $districts = ['Lodhran'];
                       foreach ($districts as $d) echo "<option value='$d' " . (($_POST['district'] ?? '') == $d ? 'selected' : '') . ">$d</option>"; ?>
                     </select>
                   </div>
@@ -508,8 +494,8 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
 
 
                   <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">Student Contact #</label>
-                    <input type="text" id="mask_contact" name="student_contact" value="<?= htmlspecialchars($_POST['student_contact'] ?? '') ?>" class="form-control">
+                    <label class="small fw-bold">Contact #</label>
+                    <input type="text" id="mask_contact" name="contact_no" value="<?= htmlspecialchars($_POST['contact_no'] ?? '') ?>" class="form-control">
                   </div>
 
                 </div>
@@ -532,16 +518,11 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                     <label class="small fw-bold">Guardian CNIC <span class="text-danger">*</span></label>
                     <input type="text" id="mask_g_cnic" name="guardian_cnic" value="<?= htmlspecialchars($_POST['guardian_cnic'] ?? '') ?>" class="form-control" required>
                   </div>
-                  <div class="col-md-3 mt-2">
-                    <label class="small fw-bold">Guardian Contact # <span class="text-danger">*</span></label>
-                    <input type="text" id="mask_g_contact" name="guardian_contact" value="<?= htmlspecialchars($_POST['guardian_contact'] ?? '') ?>" class="form-control" required>
-                  </div>
 
-                  <div class="col-md-4 mt-2">
+                  <div class="col-md-3 mt-2">
                     <label class="small fw-bold">Occupation</label>
                     <input type="text" name="occupation" value="<?= htmlspecialchars($_POST['occupation'] ?? '') ?>" class="form-control upper-case" style="text-transform: uppercase;">
                   </div>
-
                   <div class="col-md-8 mt-2">
                     <div class="  d-flex justify-content-between align-items-center">
                       <label class="small fw-bold mb-0">Guardian Address</label>
@@ -566,7 +547,10 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
                       style="text-transform: uppercase;">
                   </div>
 
-
+                  <div class="col-md-4 mt-2">
+                    <label class="small fw-bold">Contact# <span class="text-danger">*</span></label>
+                    <input type="text" id="mask_g_contact" name="guardian_contact" value="<?= htmlspecialchars($_POST['guardian_contact'] ?? '') ?>" class="form-control" required>
+                  </div>
                 </div>
 
                 <h6 class="form-section-title mt-4"><i class='fas fa-university'></i> Previous School Record</h6>
@@ -787,7 +771,7 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
 
     $(document).ready(function() {
       $('#mask_cnic, #mask_g_cnic').inputmask("99999-9999999-9");
-      $('#mask_contact, #mask_g_contact, #mask_f_contact').inputmask("0399-9999999");
+      $('#mask_contact, #mask_g_contact').inputmask("0399-9999999");
 
       $.getJSON('?action=get_all_sessions', function(res) {
         let h = '<option value="">Select Session</option>';
@@ -872,6 +856,7 @@ $groups_list = $pdo->query("SELECT * FROM subject_groups")->fetchAll();
       }
     });
   </script>
+
 </body>
 
 </html>

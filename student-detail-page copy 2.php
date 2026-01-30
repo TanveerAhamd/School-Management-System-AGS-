@@ -53,15 +53,6 @@ if (!empty($student['subject_group_id'])) {
   }
 }
 
-// $subjects_array = []; // Empty array banayein
-// if (!empty($student['subject_group_id'])) {
-//   $stmt_sub = $pdo->prepare("SELECT s.subject_name FROM subject_group_items sgi 
-//                                JOIN subjects s ON sgi.subject_id = s.id 
-//                                WHERE sgi.group_id = ?");
-//   $stmt_sub->execute([$student['subject_group_id']]);
-//   $subjects_array = $stmt_sub->fetchAll(PDO::FETCH_COLUMN);
-// }
-
 function formatMyDate($date)
 {
   return (!empty($date) && $date != '0000-00-00') ? date('d-M-Y', strtotime($date)) : 'N/A';
@@ -143,7 +134,7 @@ function formatMyDate($date)
     @media print {
       @page {
         size: A4;
-        margin: 5mm;
+        margin: 10mm;
       }
 
       body,
@@ -163,8 +154,6 @@ function formatMyDate($date)
       .navbar-bg {
         display: none !important;
       }
-
-      
 
       body * {
         visibility: hidden;
@@ -290,8 +279,6 @@ function formatMyDate($date)
                     <span><strong>Session:</strong> <span class="val-text"><?= $student['session_name'] ?></span></span>
                     <span><strong>Class:</strong> <span class="val-text"><?= $student['class_name'] ?></span></span>
                     <span><strong>Section:</strong> <span class="val-text"><?= $student['section_name'] ?></span></span>
-                    <!-- ADDED MEDIUM -->
-                    <span><strong>Medium:</strong> <span class="val-text"><?= $student['medium'] ?></span></span>
                     <span><strong>Group:</strong> <span class="val-text"><?= $student['group_name'] ?></span></span>
                   </div>
                 </div>
@@ -306,24 +293,9 @@ function formatMyDate($date)
 
               <div class="mt-2 mb-4">
                 <div class="badge bg-light text-dark p-2 border w-100 text-center" style="white-space: normal; font-size: 13px;">
-                  <strong style="color: #6777ef;">Assigned Subjects:</strong> <span class="val-text mx-2"><?= $subjects_list ?></span>
+                  <strong style="color: #6777ef;">Assigned Subjects:</strong> <span class="val-text ml-2"><?= $subjects_list ?></span>
                 </div>
               </div>
-              <!-- <div class="mt-2 p-2 border rounded" style="background-color: #f9f9f9;">
-                <strong style="color: #6777ef;">Assigned Subjects:</strong>
-
-                <div class="d-flex flex-wrap justify-content-around mt-2">
-                  <?php if (!empty($subjects_array)): ?>
-                    <?php foreach ($subjects_array as $sub): ?>
-                      <span class="badge bg-light text-dark border px-3 py-2 mb-1">
-                        <?= htmlspecialchars($sub) ?>
-                      </span>
-                    <?php endforeach; ?>
-                  <?php else: ?>
-                    <span class="text-muted small">No subjects assigned</span>
-                  <?php endif; ?>
-                </div>
-              </div> -->
 
               <!-- Student Info Section -->
               <div class="row mt-4">
@@ -333,68 +305,42 @@ function formatMyDate($date)
                 </div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Student Name</label><span class="val-text"><?= $student['student_name'] ?></span></div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">B-Form / CNIC</label><span class="val-text"><?= $student['cnic_bform'] ?></span></div>
-                <div class="col-md-2 mt-3"><label class="d-block small text-muted">DOB: MM/DD/YYYY</label><span class="val-text"><?= formatMyDate($student['dob']) ?></span></div>
-                <div class="col-md-2 mt-3"><label class="d-block small text-muted">Gender</label><span class="val-text"><?= $student['gender'] ?></span></div>
-                <div class="col-md-2 mt-3"><label class="d-block small text-muted">Mother Language</label><span class="val-text"><?= $student['mother_language'] ?></span></div>
-                <div class="col-md-2 mt-3"><label class="d-block small text-muted">Caste</label><span class="val-text"><?= $student['caste'] ?></span></div>
-
-                <!-- ADDED TEHSIL & DISTRICT -->
-                <div class="col-md-2 mt-3"><label class="d-block small text-muted">Tehsil</label><span class="val-text"><?= $student['tehsil'] ?></span></div>
-                <div class="col-md-2 mt-3"><label class="d-block small text-muted">District</label><span class="val-text"><?= $student['district'] ?></span></div>
-                <div class="col-md-4 mt-3"><label class="d-block small text-muted">Address</label><span class="val-text"><?= $student['student_address'] ?></span></div>
-                <div class="col-md-2 mt-3"><label class="d-block small text-muted">Contact #</label><span class="val-text"><?= $student['student_contact'] ?></span></div>
-
+                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Date of Birth: MM/DD/YYYY</label><span class="val-text"><?= formatMyDate($student['dob']) ?></span></div>
+                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Gender</label><span class="val-text"><?= $student['gender'] ?></span></div>
+                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Mother Language</label><span class="val-text"><?= $student['mother_language'] ?></span></div>
+                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Caste</label><span class="val-text"><?= $student['caste'] ?></span></div>
+                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Contact #</label><span class="val-text"><?= $student['contact_no'] ?></span></div>
+                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Address</label><span class="val-text"><?= $student['address'] ?></span></div>
               </div>
 
               <!-- Guardian Section -->
               <div class="row mt-5">
                 <div class="col-12 d-flex justify-content-between border-bottom pb-1">
                   <h6 class="fw-bold"><i class='fas fa-users'></i> Guardian Information</h6>
-                  <h6 dir="rtl" class="fw-bold">سرپرست کا نام (اردو): ___________________</h6>
+                  <h6 dir="rtl" class="fw-bold">سرپرست ka نام (اردو): ___________________</h6>
                 </div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Guardian Name</label><span class="val-text"><?= $student['guardian_name'] ?></span></div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Relation</label><span class="val-text"><?= $student['relation'] ?></span></div>
-
-                <!-- ADDED GUARDIAN CNIC -->
-                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Guardian CNIC</label><span class="val-text"><?= $student['guardian_cnic'] ?></span></div>
-
+                <div class="col-md-3 mt-3"><label class="d-block small text-muted">Occupation</label><span class="val-text"><?= $student['occupation'] ?></span></div>
                 <div class="col-md-3 mt-3"><label class="d-block small text-muted">Contact #</label><span class="val-text"><?= $student['guardian_contact'] ?></span></div>
-                <div class="col-md-4 mt-3"><label class="d-block small text-muted">Occupation</label><span class="val-text"><?= $student['occupation'] ?></span></div>
-
-                <!-- ADDED GUARDIAN ADDRESS -->
-                <div class="col-md-8 mt-3"><label class="d-block small text-muted">Guardian Address</label><span class="val-text w-100"><?= $student['guardian_address'] ?></span></div>
               </div>
 
               <!-- Previous School Section -->
-              <div class="row rounded mt-4 py-4 " style="background-color: rgba(223, 223, 223, 0.5);">
+              <div class="row rounded mt-4 p-2" style="background-color: rgba(223, 223, 223, 0.5);">
                 <div class="col-12">
                   <h6 class="text-dark border-bottom pb-1 fw-bold"><i class='fas fa-university'></i> Previous School Information</h6>
                   <div class="row pb-2">
-                    <div class="col-md-4 mt-2">
-                      <div class="d-flex flex-column">
-                        <label class="small">School Name</label>
-                        <p class="val-text"><?= $student['prev_school_name'] ?></p>
-                      </div>
+                    <div class="col-md-5 mt-2"><label class="small">School Name</label>
+                      <p class="val-text"><?= $student['prev_school_name'] ?></p>
                     </div>
-                    <div class="col-md-2 mt-2">
-                      <div class="d-flex flex-column">
-                        <label class="small">Last Class</label>
-                        <p class="val-text"><?= $student['last_class'] ?></p>
-                      </div>
+                    <div class="col-md-2 mt-2"><label class="small">Last Class</label>
+                      <p class="val-text"><?= $student['last_class'] ?></p>
                     </div>
-                    <div class="col-md-2 mt-2">
-                      <div class="d-flex flex-column">
-
-                        <label class="small">Year</label>
-                        <p class="val-text"><?= $student['passing_year'] ?></p>
-                      </div>
+                    <div class="col-md-2 mt-2"><label class="small">Year</label>
+                      <p class="val-text"><?= $student['passing_year'] ?></p>
                     </div>
-                    <div class="col-md-3 mt-2">
-                      <div class="d-flex flex-column">
-
-                        <label class="small">Board</label>
-                        <p class="val-text"><?= $student['board_name'] ?></p>
-                      </div>
+                    <div class="col-md-3 mt-2"><label class="small">Board</label>
+                      <p class="val-text"><?= $student['board_name'] ?></p>
                     </div>
                   </div>
                 </div>
