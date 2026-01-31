@@ -3,12 +3,16 @@
 /**
  * 1. DATABASE CONNECTION & AJAX HANDLERS
  */
-require_once 'auth.php'; // Ensure this file has your $pdo connection
+require_once 'auth.php'; 
+
+// اسکول کی پروفائل سیٹنگز
+$school_settings = $pdo->query("SELECT * FROM school_settings LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+$sch_name    = !empty($school_settings['school_name']) ? $school_settings['school_name'] : "Amina Girls High School";
+$sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $school_settings['logo'])) ? 'uploads/' . $school_settings['logo'] : 'assets/img/agslogo.png';
 
 if (isset($_GET['action'])) {
   header('Content-Type: application/json');
 
-  // Action: Fetch Sections for Filters
   if ($_GET['action'] == 'fetch_sections') {
     $stmt = $pdo->prepare("SELECT id, section_name FROM sections WHERE class_id = ?");
     $stmt->execute([$_GET['class_id'] ?? 0]);
@@ -16,19 +20,12 @@ if (isset($_GET['action'])) {
     exit;
   }
 
-  // ACTION: FETCH COMPLETE STUDENT LEDGER (Assigned vs Paid)
   if ($_GET['action'] == 'get_student_ledger' && isset($_GET['student_id'])) {
     $st_id = $_GET['student_id'];
-
-    $stmt_info = $pdo->prepare("SELECT s.*, c.class_name, sec.section_name 
-                                    FROM students s 
-                                    LEFT JOIN classes c ON s.class_id = c.id 
-                                    LEFT JOIN sections sec ON s.section_id = sec.id 
-                                    WHERE s.id = ?");
+    $stmt_info = $pdo->prepare("SELECT s.*, c.class_name, sec.section_name FROM students s LEFT JOIN classes c ON s.class_id = c.id LEFT JOIN sections sec ON s.section_id = sec.id WHERE s.id = ?");
     $stmt_info->execute([$st_id]);
     $info = $stmt_info->fetch(PDO::FETCH_ASSOC);
 
-    // Assigned Fees with Paid Status check for Ticks (✓)
     $stmt_assigned = $pdo->prepare("SELECT id, fee_title, amount FROM fee_types WHERE class_id = ?");
     $stmt_assigned->execute([$info['class_id']]);
     $assigned_raw = $stmt_assigned->fetchAll(PDO::FETCH_ASSOC);
@@ -42,33 +39,22 @@ if (isset($_GET['action'])) {
       $assigned_fees[] = $f;
     }
 
-    $transport_fare = 0;
-    $tr_paid_status = false;
+    $transport_fare = 0; $tr_paid_status = false;
     if ($info['transport'] == 'Yes' && !empty($info['route_id'])) {
       $stmt_tr = $pdo->prepare("SELECT fare FROM transport_allocations WHERE route_id = ? LIMIT 1");
       $stmt_tr->execute([$info['route_id']]);
       $transport_fare = (float)$stmt_tr->fetchColumn();
-
       $stmt_tr_check = $pdo->prepare("SELECT SUM(amount_paid + special_discount) FROM fee_payments WHERE student_id = ? AND fee_type_id = 0");
       $stmt_tr_check->execute([$st_id]);
       $tr_paid_val = (float)$stmt_tr_check->fetchColumn();
       $tr_paid_status = ($tr_paid_val >= $transport_fare);
     }
 
-    $stmt_pay = $pdo->prepare("SELECT fp.*, COALESCE(ft.fee_title, 'Transport Fee') as fee_name 
-                                    FROM fee_payments fp 
-                                    LEFT JOIN fee_types ft ON fp.fee_type_id = ft.id 
-                                    WHERE fp.student_id = ? ORDER BY fp.payment_date ASC");
+    $stmt_pay = $pdo->prepare("SELECT fp.*, COALESCE(ft.fee_title, 'Transport Fee') as fee_name FROM fee_payments fp LEFT JOIN fee_types ft ON fp.fee_type_id = ft.id WHERE fp.student_id = ? ORDER BY fp.payment_date ASC");
     $stmt_pay->execute([$st_id]);
     $history = $stmt_pay->fetchAll(PDO::FETCH_ASSOC);
 
-    echo json_encode([
-      'info' => $info,
-      'assigned' => $assigned_fees,
-      'transport_fare' => $transport_fare,
-      'tr_paid' => $tr_paid_status,
-      'history' => $history
-    ]);
+    echo json_encode(['info' => $info, 'assigned' => $assigned_fees, 'transport_fare' => $transport_fare, 'tr_paid' => $tr_paid_status, 'history' => $history]);
     exit;
   }
 }
@@ -99,202 +85,78 @@ $query = "SELECT * FROM (
 ) as ledger WHERE 1=1";
 
 $params = [];
-if (!empty($f_sess)) {
-  $query .= " AND session = ?";
-  $params[] = $f_sess;
-}
-if (!empty($f_class)) {
-  $query .= " AND class_id = ?";
-  $params[] = $f_class;
-}
-if (!empty($f_sec)) {
-  $query .= " AND section_id = ?";
-  $params[] = $f_sec;
-}
+if (!empty($f_sess)) { $query .= " AND session = ?"; $params[] = $f_sess; }
+if (!empty($f_class)) { $query .= " AND class_id = ?"; $params[] = $f_class; }
+if (!empty($f_sec)) { $query .= " AND section_id = ?"; $params[] = $f_sec; }
 
-if ($f_s_stat == 'Active') {
-  $query .= " AND is_deleted = 0 AND is_passout = 0 AND is_dropout = 0";
-} elseif ($f_s_stat == 'Dropout') {
-  $query .= " AND is_dropout = 1";
-} elseif ($f_s_stat == 'Passout') {
-  $query .= " AND is_passout = 1";
-}
+if ($f_s_stat == 'Active') { $query .= " AND is_deleted = 0 AND is_passout = 0 AND is_dropout = 0"; }
+elseif ($f_s_stat == 'Dropout') { $query .= " AND is_dropout = 1"; }
+elseif ($f_s_stat == 'Passout') { $query .= " AND is_passout = 1"; }
 
-if ($f_p_stat == 'Paid') {
-  $query .= " AND total_cleared >= total_payable AND total_payable > 0";
-} elseif ($f_p_stat == 'Unpaid') {
-  $query .= " AND total_cleared = 0";
-} elseif ($f_p_stat == 'Partial') {
-  $query .= " AND total_cleared > 0 AND total_cleared < total_payable";
-}
+if ($f_p_stat == 'Paid') { $query .= " AND total_cleared >= total_payable AND total_payable > 0"; }
+elseif ($f_p_stat == 'Unpaid') { $query .= " AND total_cleared = 0"; }
+elseif ($f_p_stat == 'Partial') { $query .= " AND total_cleared > 0 AND total_cleared < total_payable"; }
 
 $stmt = $pdo->prepare($query);
 $stmt->execute($params);
 $students = $stmt->fetchAll();
 ?>
 
-<?php
-// ڈیٹا بیس سے اسکول کی تمام سیٹنگز فیچ کریں
-$school_settings = $pdo->query("SELECT * FROM school_settings LIMIT 1")->fetch(PDO::FETCH_ASSOC);
-
-// ویری ایبلز سیٹ کریں (ڈیفالٹ ویلیوز کے ساتھ)
-$sch_name    = !empty($school_settings['school_name']) ? $school_settings['school_name'] : "Amina Girls High School";
-$sch_address = !empty($school_settings['address'])     ? $school_settings['address']     : "Adda Sikandri 21/MPR Gailywal, Lodhran";
-$sch_contact = !empty($school_settings['contact'])     ? $school_settings['contact']     : "0300-1234567";
-$sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $school_settings['logo']))
-  ? 'uploads/' . $school_settings['logo']
-  : 'assets/img/agslogo.png';
-?>
-
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-  <title>Fee Registry | AGS Lodhran</title>
+  <title>Fee Registry | AGHS Lodhran</title>
   <link rel="stylesheet" href="assets/css/app.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/datatables.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/custom.css">
+  <link rel="icon" href="assets/img/favicon.png">
   <style>
-    .uppercase-data {
-      text-transform: uppercase;
-      color: #000;
-      font-weight: bold;
-    }
+    .uppercase-data { text-transform: uppercase; color: #000; font-weight: bold; }
+    .badge-status { font-size: 8px; text-transform: uppercase; font-weight: 700; padding: 3px 6px; }
 
-    .badge-status {
-      font-size: 8px;
-      text-transform: uppercase;
-      font-weight: 700;
-      padding: 3px 6px;
+    /* --- NEW: FEE INDICATORS --- */
+    .fee-dot {
+        height: 22px; width: 22px; border-radius: 50%; display: inline-flex;
+        align-items: center; justify-content: center; font-size: 9px;
+        font-weight: bold; color: #fff; margin-right: 2px; cursor: help;
+        border: 1px solid rgba(0,0,0,0.1);
     }
+    .fee-unpaid { background-color: #fc544b; } 
+    .fee-partial { background-color: #ffa426; } 
+    .fee-paid { background-color: #47c363; }
 
-    #printArea {
-      display: flex;
-      justify-content: space-between;
-      gap: 15px;
-    }
+    /* --- ORIGINAL STATEMENT PRINT STYLES --- */
+    #printArea { display: flex; justify-content: space-between; gap: 15px; }
+    .ledger-copy { width: 48.5%; border: 2.5px solid #000; padding: 18px; background: #fff; border-radius: 10px; position: relative; color: #000; }
+    .ledger-copy::before { content: ""; background-image: url('<?= htmlspecialchars($sch_logo) ?>'); background-repeat: no-repeat; background-position: center; background-size: 200px; opacity: 0.05; position: absolute; top: 0; left: 0; bottom: 0; right: 0; z-index: 0; }
+    .ledger-copy > * { position: relative; z-index: 1; }
+    .school-title { font-size: 18px; font-weight: 900; color: #000; margin: 0; }
+    .info-label { font-size: 10px; color: #333; font-weight: bold; text-transform: uppercase; }
+    .info-val { font-size: 11px; font-weight: 900; color: #000; }
+    .table-ledger { width: 100%; border-collapse: collapse !important; font-size: 10px !important; margin-top: 5px; }
+    .table-ledger th, .table-ledger td { border: 1.5px solid #000 !important; padding: 4px !important; color: #000 !important; }
+    .summary-box { border: 1.5px solid #000; padding: 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.8); }
+    .status-stamp { font-size: 16px; font-weight: 900; border: 3px double #000; padding: 3px 10px; display: inline-block; transform: rotate(-5deg); border-radius: 6px; }
 
-    .ledger-copy {
-      width: 48.5%;
-      border: 2.5px solid #000;
-      padding: 18px;
-      background: #fff;
-      border-radius: 10px;
-      position: relative;
-      color: #000;
-    }
+    .cutter-wrapper { width: 4%; display: flex; flex-direction: column; align-items: center; justify-content: space-around; position: relative; }
+    .cutter-line { border-left: 2px dashed #000; height: 100%; position: absolute; left: 50%; top: 0; }
+    .cutter-wrapper i { background: #fff; z-index: 10; padding: 5px 0; font-size: 16px; color: #000; }
 
-    .ledger-copy::before {
-      content: "";
-      background-image: url('<?= htmlspecialchars($sch_logo) ?>');
-      background-repeat: no-repeat;
-      background-position: center;
-      background-size: 200px;
-      opacity: 0.05;
-      position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
-      z-index: 0;
-    }
-
-    .ledger-copy>* {
-      position: relative;
-      z-index: 1;
-    }
-
-    .school-title {
-      font-size: 18px;
-      font-weight: 900;
-      color: #000;
-      margin: 0;
-    }
-
-    .info-label {
-      font-size: 10px;
-      color: #333;
-      font-weight: bold;
-      text-transform: uppercase;
-    }
-
-    .info-val {
-      font-size: 11px;
-      font-weight: 900;
-      color: #000;
-    }
-
-    .table-ledger {
-      width: 100%;
-      border-collapse: collapse !important;
-      font-size: 10px !important;
-      margin-top: 5px;
-    }
-
-    .table-ledger th,
-    .table-ledger td {
-      border: 1.5px solid #000 !important;
-      padding: 4px !important;
-      color: #000 !important;
-    }
-
-    .summary-box {
-      border: 1.5px solid #000;
-      padding: 8px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.8);
-    }
-
-    .status-stamp {
-      font-size: 16px;
-      font-weight: 900;
-      border: 3px double #000;
-      padding: 3px 10px;
-      display: inline-block;
-      transform: rotate(-5deg);
-      border-radius: 6px;
-    }
+    /* Export Buttons Styling */
+    .dt-buttons .btn { padding: 4px 10px !important; font-size: 12px !important; border-radius: 4px !important; margin-right: 5px !important; height: 30px !important; }
 
     @media print {
-      @page {
-        size: A4 landscape;
-        margin: 5mm;
-      }
-
-      body {
-        background: #fff !important;
-      }
-
-      .no-print,
-      .main-sidebar,
-      .navbar,
-      .modal-header,
-      .btn,
-      .main-content .card-header {
-        display: none !important;
-      }
-
-      .main-content {
-        padding: 0 !important;
-        margin: 0 !important;
-      }
-
-      .ledger-copy {
-        border: 1.5px solid #000;
-        width: 48%;
-      }
-
-      .text-success,
-      .text-danger {
-        color: #000 !important;
-        font-weight: bold;
-      }
+      @page { size: A4 landscape; margin: 5mm; }
+      body { background: #fff !important; }
+      .no-print, .main-sidebar, .navbar, .modal-header, .btn, .card-header, .settingSidebar { display: none !important; }
+      .main-content { padding: 0 !important; margin: 0 !important; }
+      #printArea { display: flex !important; visibility: visible !important; }
+      .ledger-copy { border: 1.5px solid #000 !important; width: 48% !important; }
     }
   </style>
 </head>
@@ -318,7 +180,7 @@ $sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $sc
                 <div class="col-md-2 form-group"><label>Session</label><select name="session_id" class="form-control select2">
                     <option value="">All</option><?php foreach ($sessions as $s) echo "<option value='{$s['id']}' " . ($f_sess == $s['id'] ? 'selected' : '') . ">{$s['session_name']}</option>"; ?>
                   </select></div>
-                <div class="col-md-2 form-group"><label>Class</label><select name="class_id" id="f_class" class="form-control select2">
+                <div class="col-md-2 form-group"><label>Class</label><select name="class_id" class="form-control select2">
                     <option value="">All</option><?php foreach ($classes as $c) echo "<option value='{$c['id']}' " . ($f_class == $c['id'] ? 'selected' : '') . ">{$c['class_name']}</option>"; ?>
                   </select></div>
                 <div class="col-md-3 form-group"><label>Registry</label><select name="student_status" class="form-control select2">
@@ -337,31 +199,51 @@ $sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $sc
 
             <div class="card-body">
               <div class="table-responsive">
-                <table class="table table-striped table-hover" id="tableExport" style="width:100%;">
-
+                <table class="table table-striped table-hover" id="tableExportFee" style="width:100%;">
                   <thead>
                     <tr>
                       <th>Reg#</th>
                       <th>Name</th>
+                      <th>Class</th>
+                      <th>Fee Stats</th>
                       <th>Bill</th>
                       <th>Paid</th>
                       <th>Balance</th>
-                      <th>Status</th>
-                      <th>Action</th>
+                      <th class="no-print">Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     <?php foreach ($students as $row):
                       $bal = (float)$row['total_payable'] - (float)$row['total_cleared'];
+                      $stmt_f = $pdo->prepare("SELECT ft.fee_title, ft.amount, IFNULL(SUM(fp.amount_paid + fp.special_discount), 0) as paid FROM fee_types ft LEFT JOIN fee_payments fp ON ft.id = fp.fee_type_id AND fp.student_id = ? WHERE ft.class_id = ? GROUP BY ft.id");
+                      $stmt_f->execute([$row['id'], $row['class_id']]);
+                      $fee_details = $stmt_f->fetchAll();
                     ?>
                       <tr>
                         <td class="fw-bold"><?= $row['reg_no'] ?></td>
                         <td class="uppercase-data small"><?= $row['student_name'] ?></td>
+                        <td><?= $row['class_name'] ?></td>
+                        <td>
+                            <?php 
+                            foreach($fee_details as $fd){
+                                $initial = substr($fd['fee_title'], 0, 1);
+                                $color = ($fd['paid'] >= $fd['amount']) ? 'fee-paid' : (($fd['paid'] > 0) ? 'fee-partial' : 'fee-unpaid');
+                                echo '<span class="fee-dot '.$color.'" title="'.$fd['fee_title'].': '.number_format($fd['paid']).'/'.number_format($fd['amount']).'">'.$initial.'</span>';
+                            }
+                            if($row['transport'] == 'Yes'){
+                                $stmt_tr = $pdo->prepare("SELECT IFNULL(SUM(amount_paid + special_discount), 0) FROM fee_payments WHERE student_id = ? AND fee_type_id = 0");
+                                $stmt_tr->execute([$row['id']]); $tr_paid = (float)$stmt_tr->fetchColumn();
+                                $stmt_fare = $pdo->prepare("SELECT fare FROM transport_allocations WHERE route_id = ? LIMIT 1");
+                                $stmt_fare->execute([$row['route_id']]); $fare = (float)$stmt_fare->fetchColumn();
+                                $tr_color = ($tr_paid >= $fare) ? 'fee-paid' : (($tr_paid > 0) ? 'fee-partial' : 'fee-unpaid');
+                                echo '<span class="fee-dot '.$tr_color.'" title="Transport: '.number_format($tr_paid).'/'.number_format($fare).'">T</span>';
+                            }
+                            ?>
+                        </td>
                         <td><?= number_format($row['total_payable']) ?></td>
                         <td class="text-success"><?= number_format($row['total_cleared']) ?></td>
                         <td class="text-danger fw-bold"><?= number_format($bal) ?></td>
-                        <td><?= ($row['is_passout'] ? '<span class="badge badge-success badge-status">Passout</span>' : '<span class="badge badge-primary badge-status">Active</span>') ?></td>
-                        <td><button class="btn btn-dark btn-sm btnViewLedger" data-id="<?= $row['id'] ?>"><i class="fa fa-print"></i> Statement</button></td>
+                        <td class="no-print"><button class="btn btn-dark btn-sm btnViewLedger" data-id="<?= $row['id'] ?>"><i class="fa fa-print"></i> Statement</button></td>
                       </tr>
                     <?php endforeach; ?>
                   </tbody>
@@ -372,98 +254,7 @@ $sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $sc
         </section>
       </div>
 
-      <style>
-        /* 1. Print Optimization (Force White Background) */
-        @media print {
-          @page {
-            size: A4 landscape;
-            margin: 5mm;
-          }
-
-          /* Poore page aur modal layers ko white karne ke liye */
-          html,
-          body,
-          .modal,
-          .modal-open,
-          .modal-content,
-          .modal-body,
-          #printArea {
-            background: #ffffff !important;
-            background-color: #ffffff !important;
-            visibility: visible !important;
-          }
-
-          /* Modal ke peechay ka shadow aur extra borders khatam karne ke liye */
-          .modal-backdrop,
-          .modal-header,
-          .modal-footer,
-          .no-print,
-          .main-sidebar,
-          .navbar {
-            display: none !important;
-          }
-
-          .modal-dialog {
-            max-width: 100% !important;
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-
-          .shadow-sm {
-            box-shadow: none !important;
-          }
-
-          .ledger-copy {
-            border: 1.5px solid #000 !important;
-          }
-        }
-
-        /* 2. Professional Layout Display */
-        #printArea {
-          display: flex;
-          justify-content: space-between;
-          align-items: stretch;
-          background: #fff;
-          width: 100%;
-        }
-
-        .ledger-copy {
-          width: 47%;
-          /* Landscape spacing adjustment */
-          padding: 15px;
-          background: #fff;
-          border: 1.5px solid #000;
-        }
-
-        /* 3. Center Vertical Cutter Line */
-        .cutter-wrapper {
-          width: 4%;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: space-around;
-          /* Kainchi ko barabar faslay par rakhne ke liye */
-          position: relative;
-        }
-
-        .cutter-line {
-          border-left: 2px dashed #000;
-          height: 100%;
-          position: absolute;
-          left: 50%;
-          top: 0;
-        }
-
-        .cutter-wrapper i {
-          background: #fff;
-          z-index: 10;
-          padding: 5px 0;
-          font-size: 16px;
-          color: #000;
-        }
-      </style>
-
+      <!-- STATEMENT MODAL (EXACTLY AS PER OLD FILE) -->
       <div class="modal fade" id="ledgerModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-xl" role="document" style="max-width: 98%;">
           <div class="modal-content border-0">
@@ -474,17 +265,16 @@ $sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $sc
 
             <div class="modal-body p-3">
               <div id="printArea">
-                <?php function renderCopy($type)
-                { ?>
+                <?php function renderCopy($type) { ?>
                   <div class="ledger-copy shadow-sm">
                     <div class="row align-items-center border-bottom border-dark pb-2 mb-2">
-                      <div class="col-2"><img src="assets/img/agslogo.png" style="width:50px" onerror="this.src='assets/img/favicon.ico'"></div>
+                      <div class="col-2"><img src="assets/img/agslogo.png" style="width:50px"></div>
                       <div class="col-7 text-center">
-                        <h2 class="school-title" style="font-size:18px; font-weight:bold; margin:0;">Amina Girls High School</h2>
+                        <h2 class="school-title">Amina Girls High School</h2>
                         <p class="m-0 font-weight-bold" style="font-size:10px;">21/MPR-LODHRAN | <?= $type ?></p>
                         <h6 class="m-0" style="font-size:12px;">Student Fee Statement</h6>
                       </div>
-                      <div class="col-3"><img src="assets/img/teflogo.png" style="height:50px" onerror="this.src='assets/img/favicon.ico'"></div>
+                      <div class="col-3"><img src="assets/img/teflogo.png" style="height:50px"></div>
                     </div>
 
                     <div class="row mb-2 border-bottom border-dark pb-1">
@@ -494,29 +284,8 @@ $sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $sc
                     </div>
 
                     <div class="row">
-                      <div class="col-6">
-                        <table class="table-ledger">
-                          <thead class="bg-light">
-                            <tr>
-                              <th>Fee Item</th>
-                              <th class="text-right">Payable</th>
-                            </tr>
-                          </thead>
-                          <tbody class="assigned_rows"></tbody>
-                        </table>
-                      </div>
-                      <div class="col-6">
-                        <table class="table-ledger">
-                          <thead class="bg-light">
-                            <tr>
-                              <th>Date</th>
-                              <th>Paid</th>
-                              <th>Consession</th>
-                            </tr>
-                          </thead>
-                          <tbody class="history_rows"></tbody>
-                        </table>
-                      </div>
+                      <div class="col-6"><table class="table-ledger"><thead><tr class="bg-light"><th>Fee Item</th><th class="text-right">Payable</th></tr></thead><tbody class="assigned_rows"></tbody></table></div>
+                      <div class="col-6"><table class="table-ledger"><thead><tr class="bg-light"><th>Date</th><th>Paid</th><th>Consession</th></tr></thead><tbody class="history_rows"></tbody></table></div>
                     </div>
 
                     <div class="summary-box mt-2 p-2 border border-dark rounded">
@@ -526,9 +295,7 @@ $sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $sc
                           Total Paid: <span class="sum_paid text-success font-weight-bold"></span> | Consession: <span class="sum_mafi"></span>
                           <h6 class="mt-1 mb-0 fw-bold">Remaining Dues: <span class="sum_bal text-danger"></span></h6>
                         </div>
-                        <div class="col-5 text-center">
-                          <div class="stamp_area"></div>
-                        </div>
+                        <div class="col-5 text-center"><div class="stamp_area"></div></div>
                       </div>
                     </div>
 
@@ -540,14 +307,10 @@ $sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $sc
                 <?php } ?>
 
                 <?php renderCopy("OFFICE COPY"); ?>
-
                 <div class="cutter-wrapper">
                   <div class="cutter-line"></div>
-                  <i class="fa fa-scissors"></i>
-                  <i class="fa fa-scissors"></i>
-                  <i class="fa fa-scissors"></i>
+                  <i class="fa fa-scissors"></i><i class="fa fa-scissors"></i><i class="fa fa-scissors"></i>
                 </div>
-
                 <?php renderCopy("STUDENT COPY"); ?>
               </div>
             </div>
@@ -558,18 +321,28 @@ $sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $sc
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
   <script src="assets/js/app.min.js"></script>
   <script src="assets/bundles/datatables/datatables.min.js"></script>
-  <script src="assets/bundles/datatables/DataTables-1.10.16/js/dataTables.bootstrap4.min.js"></script>
+  <script src="assets/bundles/datatables/export-tables/dataTables.buttons.min.js"></script>
+  <script src="assets/bundles/datatables/export-tables/jszip.min.js"></script>
+  <script src="assets/bundles/datatables/export-tables/pdfmake.min.js"></script>
+  <script src="assets/bundles/datatables/export-tables/vfs_fonts.js"></script>
+  <script src="assets/bundles/datatables/export-tables/buttons.print.min.js"></script>
   <script src="assets/js/scripts.js"></script>
   <script>
     $(document).ready(function() {
-      if ($('#tableExport').length) {
-        $('#tableExport').DataTable();
-      }
+      $('#tableExportFee').DataTable({
+        dom: 'Bfrtip',
+        buttons: [
+          { extend: 'excel', text: '<i class="fa fa-file-excel"></i>', className: 'btn btn-success' },
+          { extend: 'pdf', text: '<i class="fa fa-file-pdf"></i>', className: 'btn btn-danger', orientation: 'landscape' },
+          { extend: 'print', text: '<i class="fa fa-print"></i>', className: 'btn btn-primary' }
+        ]
+      });
 
       $(document).on('click', '.btnViewLedger', function() {
         let sid = $(this).data('id');
@@ -578,36 +351,24 @@ $sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $sc
           $('.l_reg').text(res.info.reg_no);
           $('.l_class').text(res.info.class_name + " (" + (res.info.section_name || 'N/A') + ")");
 
-          let aRow = '',
-            hRow = '',
-            tBill = 0,
-            tPaid = 0,
-            tMafi = 0;
-
+          let aRow = '', hRow = '', tBill = 0, tPaid = 0, tMafi = 0;
           res.assigned.forEach(a => {
-            let tick = a.is_paid ? '<b class="text-success">✓ </b>' : '';
-            aRow += `<tr><td>${tick}${a.fee_title}</td><td class="text-right">${parseFloat(a.amount).toLocaleString()}</td></tr>`;
+            aRow += `<tr><td>${a.is_paid ? '<b class="text-success">✓ </b>' : ''}${a.fee_title}</td><td class="text-right">${parseFloat(a.amount).toLocaleString()}</td></tr>`;
             tBill += parseFloat(a.amount);
           });
           if (res.transport_fare > 0) {
-            let tTick = res.tr_paid ? '<b class="text-success">✓ </b>' : '';
-            aRow += `<tr><td>${tTick}Transport Fee</td><td class="text-right">${parseFloat(res.transport_fare).toLocaleString()}</td></tr>`;
+            aRow += `<tr><td>${res.tr_paid ? '<b class="text-success">✓ </b>' : ''}Transport Fee</td><td class="text-right">${parseFloat(res.transport_fare).toLocaleString()}</td></tr>`;
             tBill += parseFloat(res.transport_fare);
           }
-
           res.history.forEach(h => {
             hRow += `<tr><td>${h.payment_date}</td><td class="text-right">${parseFloat(h.amount_paid).toLocaleString()}</td><td class="text-right">${parseFloat(h.special_discount).toLocaleString()}</td></tr>`;
             tPaid += parseFloat(h.amount_paid);
             tMafi += parseFloat(h.special_discount);
           });
-
           let balance = tBill - (tPaid + tMafi);
-          $('.assigned_rows').html(aRow);
-          $('.history_rows').html(hRow || '<tr><td colspan="3" class="text-center">No Data</td></tr>');
-          $('.sum_bill').text(tBill.toLocaleString());
-          $('.sum_paid').text(tPaid.toLocaleString());
-          $('.sum_mafi').text(tMafi.toLocaleString());
-          $('.sum_bal').text(balance.toLocaleString());
+          $('.assigned_rows').html(aRow); $('.history_rows').html(hRow || '<tr><td colspan="3" class="text-center">No Data</td></tr>');
+          $('.sum_bill').text(tBill.toLocaleString()); $('.sum_paid').text(tPaid.toLocaleString());
+          $('.sum_mafi').text(tMafi.toLocaleString()); $('.sum_bal').text(balance.toLocaleString());
           $('.live-date').text(new Date().toLocaleDateString('en-GB'));
           $('.stamp_area').html(balance <= 0 ? '<div class="status-stamp text-success">PAID</div>' : '<div class="status-stamp text-danger">DUE</div>');
           $('#ledgerModal').modal('show');
@@ -616,5 +377,4 @@ $sch_logo    = (!empty($school_settings['logo']) && file_exists('uploads/' . $sc
     });
   </script>
 </body>
-
 </html>

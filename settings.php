@@ -7,7 +7,9 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once 'auth.php'; // اس میں PDO کنکشن پہلے سے موجود ہونا چاہیے
 
 $target_dir = "uploads/";
-if (!is_dir($target_dir)) { mkdir($target_dir, 0777, true); }
+if (!is_dir($target_dir)) {
+    mkdir($target_dir, 0777, true);
+}
 
 $swal = null;
 $redirect_to_logout = false;
@@ -25,7 +27,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (!empty($_FILES['logo']['name'])) {
             $logo_name = "logo_" . time() . "_" . basename($_FILES['logo']['name']);
             if (move_uploaded_file($_FILES['logo']['tmp_name'], $target_dir . $logo_name)) {
-                if (!empty($old_logo) && file_exists($target_dir . $old_logo)) { unlink($target_dir . $old_logo); }
+                if (!empty($old_logo) && file_exists($target_dir . $old_logo)) {
+                    unlink($target_dir . $old_logo);
+                }
             }
         }
 
@@ -55,7 +59,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (!empty($_FILES['profile_pic']['name'])) {
             $pic_name = "admin_" . time() . "_" . basename($_FILES['profile_pic']['name']);
             if (move_uploaded_file($_FILES['profile_pic']['tmp_name'], $target_dir . $pic_name)) {
-                if (!empty($old_pic) && file_exists($target_dir . $old_pic)) { unlink($target_dir . $old_pic); }
+                if (!empty($old_pic) && file_exists($target_dir . $old_pic)) {
+                    unlink($target_dir . $old_pic);
+                }
             }
         }
 
@@ -84,17 +90,42 @@ $admin = $admin_stmt->fetch(PDO::FETCH_ASSOC);
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
-    <title>School Profile | AGS Lodhran</title>
+    <title>School Profile | AGHS Lodhran</title>
     <link rel="stylesheet" href="assets/css/app.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/custom.css">
+    <link rel="icon" href="assets/img/favicon.png">
     <style>
-        .preview-circle { width: 130px; height: 130px; border-radius: 50%; border: 4px solid #6777ef; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; margin: 0 auto 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); position: relative; }
-        .preview-circle img { width: 100%; height: 100%; object-fit: cover; }
-        .card-header h4 { font-weight: 700 !important; color: #6777ef !important; }
+        .preview-circle {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            border: 4px solid #6777ef;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin: 0 auto 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .preview-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-header h4 {
+            font-weight: 700 !important;
+            color: #6777ef !important;
+        }
     </style>
 </head>
 
@@ -122,7 +153,7 @@ $admin = $admin_stmt->fetch(PDO::FETCH_ASSOC);
                                     <form method="POST" enctype="multipart/form-data">
                                         <div class="card-body">
                                             <div class="preview-circle" id="logoCircle">
-                                                <?php if(!empty($school['logo']) && file_exists('uploads/'.$school['logo'])): ?>
+                                                <?php if (!empty($school['logo']) && file_exists('uploads/' . $school['logo'])): ?>
                                                     <img src="uploads/<?= $school['logo'] ?>">
                                                 <?php else: ?>
                                                     <i class="fas fa-school fa-3x text-muted"></i>
@@ -162,7 +193,7 @@ $admin = $admin_stmt->fetch(PDO::FETCH_ASSOC);
                                     <form method="POST" enctype="multipart/form-data">
                                         <div class="card-body">
                                             <div class="preview-circle" id="adminCircle">
-                                                <?php if(!empty($admin['profile_pic']) && file_exists('uploads/'.$admin['profile_pic'])): ?>
+                                                <?php if (!empty($admin['profile_pic']) && file_exists('uploads/' . $admin['profile_pic'])): ?>
                                                     <img src="uploads/<?= $admin['profile_pic'] ?>">
                                                 <?php else: ?>
                                                     <i class="fas fa-user-circle fa-3x text-muted"></i>
@@ -229,10 +260,11 @@ $admin = $admin_stmt->fetch(PDO::FETCH_ASSOC);
                 <?php if ($redirect_to_logout): ?>
                     window.location.href = "logout.php";
                 <?php else: ?>
-                    window.location.href = "settings.php"; 
+                    window.location.href = "settings.php";
                 <?php endif; ?>
             });
         <?php endif; ?>
     </script>
 </body>
+
 </html>

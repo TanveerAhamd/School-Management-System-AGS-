@@ -10,7 +10,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'download_backup') {
   while ($row = $result->fetch(PDO::FETCH_NUM)) {
     $tables[] = $row[0];
   }
-  $return = "-- AGS DATABASE BACKUP\n-- Date: " . date('d-M-Y h:i A') . "\n\n";
+  $return = "-- AGHS DATABASE BACKUP\n-- Date: " . date('d-M-Y h:i A') . "\n\n";
   foreach ($tables as $table) {
     $result = $pdo->query("SELECT * FROM $table");
     $num_fields = $result->columnCount();
@@ -126,11 +126,13 @@ $c_female = array_column($cls_data, 'active_female');
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-  <title>Smart Dashboard | AGS Lodhran</title>
+  <title>Smart Dashboard | AGHS Lodhran</title>
   <link rel="stylesheet" href="assets/css/app.min.css">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/custom.css">
+  <link rel="icon" href="assets/img/favicon.png">
+
   <style>
     .welcome-banner {
       background: linear-gradient(to right, #6777ef, #c7cbeaff);
@@ -635,41 +637,47 @@ $c_female = array_column($cls_data, 'active_female');
   <script src="assets/bundles/apexcharts/apexcharts.min.js"></script>
   <script src="assets/js/scripts.js"></script>
   <script>
-    new ApexCharts(document.querySelector("#classChart"), {
-      series: [{
-          name: 'Total Active',
-          data: <?= json_encode($c_total) ?>
-        },
-        {
-          name: 'Male',
-          data: <?= json_encode($c_male) ?>
-        },
-        {
-          name: 'Female',
-          data: <?= json_encode($c_female) ?>
-        }
-      ],
-      chart: {
-        type: 'bar',
-        height: 330,
-        toolbar: {
-          show: false
-        }
-      },
-      plotOptions: {
-        bar: {
-          columnWidth: '55%',
-          borderRadius: 5
-        }
-      },
-      colors: ['#3abaf4', '#007bff', '#e83e8c'],
-      xaxis: {
-        categories: <?= json_encode($c_labels) ?>
-      },
-      legend: {
-        position: 'top'
-      }
-    }).render();
+new ApexCharts(document.querySelector("#classChart"), {
+  series: [
+    {
+      name: 'Total Active',
+      data: <?= json_encode($c_total) ?>
+    },
+    {
+      name: 'Male',
+      data: <?= json_encode($c_male) ?>
+    },
+    {
+      name: 'Female',
+      data: <?= json_encode($c_female) ?>
+    }
+  ],
+  chart: {
+    type: 'bar',
+    height: 330,
+    toolbar: {
+      show: false
+    }
+  },
+  plotOptions: {
+    bar: {
+      columnWidth: '55%',
+      borderRadius: 5
+    }
+  },
+  colors: ['#3abaf4', '#007bff', '#e83e8c'],
+  xaxis: {
+    categories: <?= json_encode($c_labels) ?>
+  },
+  tooltip: {
+    shared: true,
+    intersect: false
+  },
+  legend: {
+    position: 'top'
+  }
+}).render();
+
 
     new ApexCharts(document.querySelector("#studentStatusChart"), {
       series: [<?= (int)$st['active'] ?>, <?= (int)$st['passout'] ?>, <?= (int)$st['dropout'] ?>],

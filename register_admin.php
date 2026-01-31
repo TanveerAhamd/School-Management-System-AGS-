@@ -55,10 +55,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-    <title>Registration(Admin) | AGS Lodhran</title>
+    <title>Registration(Admin) | AGHS Lodhran</title>
     <link rel="stylesheet" href="assets/css/app.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/components.css">
+      <link rel="stylesheet" href="assets/css/custom.css">
+  <link rel="icon" href="assets/img/favicon.png">
 </head>
 
 <body>

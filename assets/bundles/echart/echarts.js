@@ -87814,7 +87814,7 @@
             }
 
             // Convert rich text to plain text. Rich text is not supported in
-            // IE8-, but tags in rich text template will be removed.
+            // IE8-, but tAGHS in rich text template will be removed.
             if (style.rich) {
                 var contentBlock = parseRichText(text, style);
                 text = [];
@@ -89105,10 +89105,10 @@
 
         var doms = [];
         each$1(this._tagNames, function (tagName) {
-            var tags = defs.getElementsByTagName(tagName);
-            // Note that tags is HTMLCollection, which is array-like
+            var tAGHS = defs.getElementsByTagName(tagName);
+            // Note that tAGHS is HTMLCollection, which is array-like
             // rather than real array.
-            // So `doms.concat(tags)` add tags as one object.
+            // So `doms.concat(tags)` add tAGHS as one object.
             doms = doms.concat([].slice.call(tags));
         });
 

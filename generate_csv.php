@@ -4,7 +4,7 @@ require_once 'auth.php';
 
 if (isset($_GET['class_id'])) {
     $filename = "AGS_Bulk_Import_Template.csv";
-    
+
     // Headers to force download
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -15,7 +15,8 @@ if (isset($_GET['class_id'])) {
     // SECTION 1: REFERENCE DATA (METADATA)
     // ==========================================
 
-    function printRefHeader($file, $title) {
+    function printRefHeader($file, $title)
+    {
         fputcsv($file, ['#', '--------------------------------']);
         fputcsv($file, ['#', "REF LIST: " . strtoupper($title)]);
         fputcsv($file, ['# ID', 'NAME / DETAIL']);
@@ -24,23 +25,23 @@ if (isset($_GET['class_id'])) {
     // 1. SESSIONS
     printRefHeader($output, 'SESSIONS');
     $stmt = $pdo->query("SELECT id, session_name FROM academic_sessions ORDER BY id DESC");
-    while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         fputcsv($output, [$row['id'], $row['session_name']]);
     }
 
     // 2. CLASSES
     printRefHeader($output, 'CLASSES');
     $stmt = $pdo->query("SELECT id, class_name FROM classes");
-    while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         fputcsv($output, [$row['id'], $row['class_name']]);
     }
 
     // 3. SECTIONS (Filtered)
-    if(!empty($_GET['class_id'])){
+    if (!empty($_GET['class_id'])) {
         printRefHeader($output, 'SECTIONS (For Selected Class)');
         $stmt = $pdo->prepare("SELECT id, section_name FROM sections WHERE class_id = ?");
         $stmt->execute([$_GET['class_id']]);
-        while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             fputcsv($output, [$row['id'], $row['section_name']]);
         }
     }
@@ -48,14 +49,14 @@ if (isset($_GET['class_id'])) {
     // 4. GROUPS
     printRefHeader($output, 'GROUPS');
     $stmt = $pdo->query("SELECT id, group_name FROM subject_groups");
-    while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         fputcsv($output, [$row['id'], $row['group_name']]);
     }
 
     // 5. ROUTES
     printRefHeader($output, 'TRANSPORT ROUTES');
     $stmt = $pdo->query("SELECT id, route_name FROM transport_routes");
-    while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         fputcsv($output, [$row['id'], $row['route_name']]);
     }
 
@@ -69,14 +70,14 @@ if (isset($_GET['class_id'])) {
     // ==========================================
     // SECTION 2: ACTUAL DATA HEADERS (33 Columns)
     // ==========================================
-    
+
     $headers = [
         'Reg No',               // 0
         'Admission Date',       // 1
         'Session ID',           // 2
         'Class ID',             // 3
         'Section ID',           // 4
-        'Medium (ENGLISH/URDU)',// 5
+        'Medium (ENGLISH/URDU)', // 5
         'Group ID',             // 6
         'Student Name',         // 7
         'CNIC/B-Form',          // 8
@@ -110,8 +111,11 @@ if (isset($_GET['class_id'])) {
 
     // ==========================================
     // SECTION 3: SAMPLE ROW
+    // Set Sample Date format using ... mm/dd/yy 
+    // =IF(ISNUMBER(A2),TEXT(A2,"mm/dd/yyyy"),TEXT(DATE(RIGHT(A2,4),MID(A2,4,2),LEFT(A2,2)),"mm/dd/yyyy"))
+    // Change cell name as per your admition date and dob cell individually 
     // ==========================================
-    
+
     $sess_id = $_GET['session_id'] ?? '';
     $cls_id  = $_GET['class_id'] ?? '';
     $sec_id  = $_GET['section_id'] ?? '';
@@ -125,32 +129,32 @@ if (isset($_GET['class_id'])) {
         $sec_id,                // Section
         'ENGLISH',              // Medium
         $grp_id,                // Group
-        'SAMPLE STUDENT',       // Name
+        'TANVEER AHMAD',       // Name
         '36101-1234567-1',      // CNIC
         '2010-01-01',           // DOB
-        'FEMALE',               // Gender
+        'MALE',               // Gender
         'URDU',                 // Lang
         'JATT',                 // Caste
         'LODHRAN',              // Tehsil
         'LODHRAN',              // District
-        '0300-1234567',         // Contact
+        '0300-0695646',         // Contact
         'HOUSE #1 ABC ROAD',    // Address
         'GUARDIAN NAME',        // G Name
         'Father',               // Relation
         'Business',             // Occupation
         '36101-9876543-1',      // G CNIC
-        '0300-7654321',         // G Contact
+        '0300-0695646',         // G Contact
         'HOUSE #1 ABC ROAD',    // G Address
         'GOVT SCHOOL',          // Prev School
         '8TH',                  // Last Class
-        '2025',                 // Passing Year
+        '2026',                 // Passing Year
         'BISE MULTAN',          // Board
         'No',                   // Disability
         'No',                   // Hafiz
         'No',                   // Transport
         '',                     // Route ID
         'Cricket,Chess',        // Interests
-        'New Admission'         // Remarks
+        'Admission Approved'         // Remarks
     ];
 
     fputcsv($output, $sample_row);
@@ -158,4 +162,3 @@ if (isset($_GET['class_id'])) {
     fclose($output);
     exit;
 }
-?>

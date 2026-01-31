@@ -1,9 +1,9 @@
-<?php 
-require_once 'auth.php'; 
+<?php
+require_once 'auth.php';
 
 // 1. Session & Page Security
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+  session_start();
 }
 $current_page = basename($_SERVER['PHP_SELF']);
 
@@ -15,56 +15,56 @@ $filter_class = isset($_GET['class_id']) ? $_GET['class_id'] : 'all';
 // ==========================================
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    
-    // --- INSERT SECTION ---
-    if (isset($_POST['btn_save'])) {
-        $s_name = trim($_POST['s_name']);
-        $s_nick = trim($_POST['s_nick']);
-        $class_id = $_POST['class_id'];
-        $teacher_id = $_POST['teacher_id'];
 
-        if (!empty($s_name) && !empty($class_id)) {
-            $stmt = $pdo->prepare("INSERT INTO sections (section_name, nick_name, class_id, teacher_id) VALUES (?, ?, ?, ?)");
-            if ($stmt->execute([$s_name, $s_nick, $class_id, $teacher_id])) {
-                $_SESSION['msg'] = "Section successfully add ho gaya!";
-                $_SESSION['msg_title'] = "Success!";
-                $_SESSION['msg_type'] = "success";
-            }
-        }
-        header("Location: $current_page");
-        exit();
+  // --- INSERT SECTION ---
+  if (isset($_POST['btn_save'])) {
+    $s_name = trim($_POST['s_name']);
+    $s_nick = trim($_POST['s_nick']);
+    $class_id = $_POST['class_id'];
+    $teacher_id = $_POST['teacher_id'];
+
+    if (!empty($s_name) && !empty($class_id)) {
+      $stmt = $pdo->prepare("INSERT INTO sections (section_name, nick_name, class_id, teacher_id) VALUES (?, ?, ?, ?)");
+      if ($stmt->execute([$s_name, $s_nick, $class_id, $teacher_id])) {
+        $_SESSION['msg'] = "Section successfully add ho gaya!";
+        $_SESSION['msg_title'] = "Success!";
+        $_SESSION['msg_type'] = "success";
+      }
     }
+    header("Location: $current_page");
+    exit();
+  }
 
-    // --- UPDATE SECTION ---
-    if (isset($_POST['btn_update'])) {
-        $id = $_POST['u_id'];
-        $s_name = trim($_POST['u_name']);
-        $s_nick = trim($_POST['u_nick']);
-        $class_id = $_POST['u_class'];
-        $teacher_id = $_POST['u_teacher'];
+  // --- UPDATE SECTION ---
+  if (isset($_POST['btn_update'])) {
+    $id = $_POST['u_id'];
+    $s_name = trim($_POST['u_name']);
+    $s_nick = trim($_POST['u_nick']);
+    $class_id = $_POST['u_class'];
+    $teacher_id = $_POST['u_teacher'];
 
-        $stmt = $pdo->prepare("UPDATE sections SET section_name=?, nick_name=?, class_id=?, teacher_id=? WHERE id=?");
-        if ($stmt->execute([$s_name, $s_nick, $class_id, $teacher_id, $id])) {
-            $_SESSION['msg'] = "Section update ho gaya!";
-            $_SESSION['msg_title'] = "Updated!";
-            $_SESSION['msg_type'] = "success";
-        }
-        header("Location: $current_page");
-        exit();
+    $stmt = $pdo->prepare("UPDATE sections SET section_name=?, nick_name=?, class_id=?, teacher_id=? WHERE id=?");
+    if ($stmt->execute([$s_name, $s_nick, $class_id, $teacher_id, $id])) {
+      $_SESSION['msg'] = "Section update ho gaya!";
+      $_SESSION['msg_title'] = "Updated!";
+      $_SESSION['msg_type'] = "success";
     }
+    header("Location: $current_page");
+    exit();
+  }
 
-    // --- DELETE SECTION ---
-    if (isset($_POST['btn_delete'])) {
-        $id = $_POST['d_id'];
-        $stmt = $pdo->prepare("DELETE FROM sections WHERE id = ?");
-        if ($stmt->execute([$id])) {
-            $_SESSION['msg'] = "Section delete kar diya gaya!";
-            $_SESSION['msg_title'] = "Deleted!";
-            $_SESSION['msg_type'] = "success";
-        }
-        header("Location: $current_page");
-        exit();
+  // --- DELETE SECTION ---
+  if (isset($_POST['btn_delete'])) {
+    $id = $_POST['d_id'];
+    $stmt = $pdo->prepare("DELETE FROM sections WHERE id = ?");
+    if ($stmt->execute([$id])) {
+      $_SESSION['msg'] = "Section delete kar diya gaya!";
+      $_SESSION['msg_title'] = "Deleted!";
+      $_SESSION['msg_type'] = "success";
     }
+    header("Location: $current_page");
+    exit();
+  }
 }
 
 // ==========================================
@@ -79,7 +79,7 @@ $sql = "SELECT sections.*, classes.class_name, teachers.teacher_name
         LEFT JOIN teachers ON sections.teacher_id = teachers.id";
 
 if ($filter_class !== 'all') {
-    $sql .= " WHERE sections.class_id = " . intval($filter_class);
+  $sql .= " WHERE sections.class_id = " . intval($filter_class);
 }
 $sql .= " ORDER BY sections.id DESC";
 $sections_list = $pdo->query($sql)->fetchAll();
@@ -87,16 +87,18 @@ $sections_list = $pdo->query($sql)->fetchAll();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-  <title>Manage Section| AGS Lodhran</title>
+  <title>Manage Section| AGHS Lodhran</title>
   <link rel="stylesheet" href="assets/css/app.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/datatables.min.css">
   <link rel="stylesheet" href="assets/bundles/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/custom.css">
+  <link rel="icon" href="assets/img/favicon.png">
 </head>
 
 <body>
@@ -112,7 +114,7 @@ $sections_list = $pdo->query($sql)->fetchAll();
       <div class="main-content">
         <section class="section">
           <div class="section-body">
-            
+
             <div class="row bg-title">
               <div class="col-12">
                 <div class="card mb-3">
@@ -151,7 +153,7 @@ $sections_list = $pdo->query($sql)->fetchAll();
                         <label>Class</label>
                         <select name="class_id" class="form-control select2" required>
                           <option value="">Select Class</option>
-                          <?php foreach($all_classes as $class): ?>
+                          <?php foreach ($all_classes as $class): ?>
                             <option value="<?= $class['id'] ?>"><?= $class['class_name'] ?></option>
                           <?php endforeach; ?>
                         </select>
@@ -160,7 +162,7 @@ $sections_list = $pdo->query($sql)->fetchAll();
                         <label>Teacher</label>
                         <select name="teacher_id" class="form-control select2" required>
                           <option value="">Select Teacher</option>
-                          <?php foreach($all_teachers as $teacher): ?>
+                          <?php foreach ($all_teachers as $teacher): ?>
                             <option value="<?= $teacher['id'] ?>"><?= $teacher['teacher_name'] ?></option>
                           <?php endforeach; ?>
                         </select>
@@ -179,10 +181,10 @@ $sections_list = $pdo->query($sql)->fetchAll();
                     <p class="mb-0 font-weight-bold"><i class="fa fa-list"></i>&nbsp;List Section</p>
                   </div>
                   <div class="card-body">
-                    
+
                     <div class="badges mb-3">
                       <a href="manage-section.php?class_id=all" class="badge <?= ($filter_class == 'all') ? 'badge-primary' : 'badge-dark' ?>">All</a>
-                      <?php foreach($all_classes as $c): ?>
+                      <?php foreach ($all_classes as $c): ?>
                         <a href="manage-section.php?class_id=<?= $c['id'] ?>" class="badge badge-info <?= ($filter_class == $c['id']) ? 'border border-dark' : '' ?>">
                           Class: <?= $c['class_name'] ?>
                         </a>
@@ -202,18 +204,19 @@ $sections_list = $pdo->query($sql)->fetchAll();
                           </tr>
                         </thead>
                         <tbody>
-                          <?php $count = 1; foreach($sections_list as $row): ?>
-                          <tr>
-                            <td><?= $count++ ?></td>
-                            <td><?= $row['section_name'] ?></td>
-                            <td><?= $row['nick_name'] ?></td>
-                            <td><?= $row['class_name'] ?></td>
-                            <td><?= $row['teacher_name'] ?></td>
-                            <td>
-                              <button class="btn btn-sm btn-primary editBtn" data-id="<?= $row['id'] ?>" data-name="<?= $row['section_name'] ?>" data-nick="<?= $row['nick_name'] ?>" data-class="<?= $row['class_id'] ?>" data-teacher="<?= $row['teacher_id'] ?>"><i class="fa fa-edit"></i></button>
-                              <button class="btn btn-sm btn-danger deleteBtn" data-id="<?= $row['id'] ?>"><i class="fa fa-trash"></i></button>
-                            </td>
-                          </tr>
+                          <?php $count = 1;
+                          foreach ($sections_list as $row): ?>
+                            <tr>
+                              <td><?= $count++ ?></td>
+                              <td><?= $row['section_name'] ?></td>
+                              <td><?= $row['nick_name'] ?></td>
+                              <td><?= $row['class_name'] ?></td>
+                              <td><?= $row['teacher_name'] ?></td>
+                              <td>
+                                <button class="btn btn-sm btn-primary editBtn" data-id="<?= $row['id'] ?>" data-name="<?= $row['section_name'] ?>" data-nick="<?= $row['nick_name'] ?>" data-class="<?= $row['class_id'] ?>" data-teacher="<?= $row['teacher_id'] ?>"><i class="fa fa-edit"></i></button>
+                                <button class="btn btn-sm btn-danger deleteBtn" data-id="<?= $row['id'] ?>"><i class="fa fa-trash"></i></button>
+                              </td>
+                            </tr>
                           <?php endforeach; ?>
                         </tbody>
                       </table>
@@ -231,7 +234,9 @@ $sections_list = $pdo->query($sql)->fetchAll();
       <div class="modal fade" id="editSectionModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-md" role="document">
           <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title">Edit Section</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
+            <div class="modal-header">
+              <h5 class="modal-title">Edit Section</h5><button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
             <form method="POST">
               <input type="hidden" name="u_id" id="u_id">
               <div class="modal-body">
@@ -239,11 +244,15 @@ $sections_list = $pdo->query($sql)->fetchAll();
                 <div class="form-group"><label>Nick Name</label><input type="text" name="u_nick" id="u_nick" class="form-control" required></div>
                 <div class="form-group">
                   <label>Class</label>
-                  <select name="u_class" id="u_class" class="form-control select2" style="width:100%"><?php foreach($all_classes as $class){ echo "<option value='".$class['id']."'>".$class['class_name']."</option>"; } ?></select>
+                  <select name="u_class" id="u_class" class="form-control select2" style="width:100%"><?php foreach ($all_classes as $class) {
+                                                                                                        echo "<option value='" . $class['id'] . "'>" . $class['class_name'] . "</option>";
+                                                                                                      } ?></select>
                 </div>
                 <div class="form-group">
                   <label>Teacher</label>
-                  <select name="u_teacher" id="u_teacher" class="form-control select2" style="width:100%"><?php foreach($all_teachers as $teacher){ echo "<option value='".$teacher['id']."'>".$teacher['teacher_name']."</option>"; } ?></select>
+                  <select name="u_teacher" id="u_teacher" class="form-control select2" style="width:100%"><?php foreach ($all_teachers as $teacher) {
+                                                                                                            echo "<option value='" . $teacher['id'] . "'>" . $teacher['teacher_name'] . "</option>";
+                                                                                                          } ?></select>
                 </div>
               </div>
               <div class="modal-footer"><button type="submit" name="btn_update" class="btn btn-info">Update</button></div>
@@ -257,7 +266,9 @@ $sections_list = $pdo->query($sql)->fetchAll();
           <div class="modal-content">
             <form method="POST">
               <input type="hidden" name="d_id" id="d_id">
-              <div class="modal-body text-center"><h6>Delete this record?</h6></div>
+              <div class="modal-body text-center">
+                <h6>Delete this record?</h6>
+              </div>
               <div class="modal-footer justify-content-center">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
                 <button type="submit" name="btn_delete" class="btn btn-danger">Yes, Delete</button>
@@ -285,23 +296,32 @@ $sections_list = $pdo->query($sql)->fetchAll();
 
   <script>
     $(document).on('click', '.editBtn', function() {
-        $('#u_id').val($(this).data('id'));
-        $('#u_name').val($(this).data('name'));
-        $('#u_nick').val($(this).data('nick'));
-        $('#u_class').val($(this).data('class')).trigger('change');
-        $('#u_teacher').val($(this).data('teacher')).trigger('change');
-        $('#editSectionModal').modal('show');
+      $('#u_id').val($(this).data('id'));
+      $('#u_name').val($(this).data('name'));
+      $('#u_nick').val($(this).data('nick'));
+      $('#u_class').val($(this).data('class')).trigger('change');
+      $('#u_teacher').val($(this).data('teacher')).trigger('change');
+      $('#editSectionModal').modal('show');
     });
 
     $(document).on('click', '.deleteBtn', function() {
-        $('#d_id').val($(this).data('id'));
-        $('#deleteSectionModal').modal('show');
+      $('#d_id').val($(this).data('id'));
+      $('#deleteSectionModal').modal('show');
     });
 
-    <?php if(isset($_SESSION['msg'])): ?>
-      swal({ title: "<?= $_SESSION['msg_title'] ?>", text: "<?= $_SESSION['msg'] ?>", icon: "<?= $_SESSION['msg_type'] ?>", timer: 2000, buttons: false });
-      <?php unset($_SESSION['msg']); unset($_SESSION['msg_title']); unset($_SESSION['msg_type']); ?>
+    <?php if (isset($_SESSION['msg'])): ?>
+      swal({
+        title: "<?= $_SESSION['msg_title'] ?>",
+        text: "<?= $_SESSION['msg'] ?>",
+        icon: "<?= $_SESSION['msg_type'] ?>",
+        timer: 2000,
+        buttons: false
+      });
+      <?php unset($_SESSION['msg']);
+      unset($_SESSION['msg_title']);
+      unset($_SESSION['msg_type']); ?>
     <?php endif; ?>
   </script>
 </body>
+
 </html>
